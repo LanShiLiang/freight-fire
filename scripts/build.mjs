@@ -11,7 +11,7 @@ await (async function standaloneBuild() {
   for (const relative of ['index.html', 'games/freight-fire/index.html']) {
     const filename = path.join(output, relative);
     const html = await readFile(filename, 'utf8');
-    await writeFile(filename, html.replace(/<body\b([^>]*)>/i, (_, attrs) => '<body' + attrs.replace(/\sdata-static=(["']).*?\1/i, '') + ' data-static="true">'));
+    await writeFile(filename, html.replace(/<body\b([^>]*)>/i, (_, attrs) => '<body' + attrs.replace(/\sdata-static=(["']).*?\1/i, '') + ' data-static="true">').replace('人机模式可直接开始。邀请好友请选择局域网模式。', '选择阵营与人数，即可开始人机对战。'));
   }
   console.log('Built standalone Transport Ship: ' + output);
 })();
