@@ -1,0 +1,99 @@
+{
+  "source": "https://github.com/ETO-ze/dust2-web",
+  "mirror": "https://cs2.duskrain.cn/",
+  "lockVersion": "5a82c6eead18b7e0",
+  "downloaded": "2026-10-04T18:52:33.6897599Z",
+  "files": [
+    {
+      "path": "assets/characters-cs2/arms/ct-sas.glb",
+      "bytes": 4280896,
+      "sha256": "ccef85a6e35bd11507885df86030d220410b3a62e0f9af4b817d0097a0bd8685",
+      "group": "agent"
+    },
+    {
+      "path": "assets/characters-cs2/arms/t-phoenix.glb",
+      "bytes": 4782448,
+      "sha256": "4ea5e2de35189420fb1c19a07f8181692bcef1d662e068065e8a4a9b6cb2e9b5",
+      "group": "agent"
+    },
+    {
+      "path": "assets/viewmodel/animations-manifest.json",
+      "bytes": 31218,
+      "sha256": "05268f8b6d2482500b44f02c911f1a39e34761f69b80936a9887597b83f1db2c",
+      "group": "metadata"
+    },
+    {
+      "path": "assets/viewmodel/animations.glb",
+      "bytes": 24213300,
+      "sha256": "85d272755ed243ed360f5f91895321e3dfcd0e0622b04537ec2f052aa59a76de",
+      "group": "weapons"
+    },
+    {
+      "path": "assets/viewmodel/manifest.json",
+      "bytes": 4941,
+      "sha256": "c39ffad87ceb2bea3b0a596f3f653c9abb3eb63181347c59c4d5b434548023b1",
+      "group": "metadata"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/ak47-vulcan.glb",
+      "bytes": 2807216,
+      "sha256": "46c540e3869bb2737d633a67c578ce9e2665eae63f1c07544793ecf8de4f558c",
+      "group": "archived-skin",
+      "localArchive": "artifacts/skin-upgrade/retired/ak47-vulcan.glb"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/awp-dragon-lore.glb",
+      "bytes": 4490124,
+      "sha256": "1ac23c5e6886527fadd17b41a841f248e3d26b9af9d8e23ce3d1916afa0351c7",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/karambit-sapphire.glb",
+      "bytes": 2877116,
+      "sha256": "a07db7b66f7bfda4174f44b95cfb32281db8102cd9bbb488fb6165728dc5cb1a",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/m4a1-printstream.glb",
+      "bytes": 3592668,
+      "sha256": "6321cb8e979aaebf7f70ba77a36f2e0e84a40324d791b6b851088c2dc7af2a0e",
+      "group": "archived-skin",
+      "localArchive": "artifacts/skin-upgrade/retired/m4a1-printstream.glb"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/usp-kill-confirmed.glb",
+      "bytes": 3266132,
+      "sha256": "56e56702c589f2fe173b62ae729778ab6cfad29ba5a2f24a8bb4d610bbb519cc",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/cs2-skins/optional/ak47-fire-serpent.glb",
+      "bytes": 3400016,
+      "sha256": "3591d83e3c1de5eab06d4d656fbc0d6a6a753d984df438edb97c7d0549af2550",
+      "group": "skin",
+      "localFile": "ak47-fire-serpent.glb"
+    },
+    {
+      "path": "assets/weapons/cs2-skins/optional/m4a1-golden-coil.glb",
+      "bytes": 4516992,
+      "sha256": "f74ff219e5cc3087ed36e0935637c6bdade5772d28ed1cfb8f1376f9fde38ef3",
+      "group": "skin",
+      "localFile": "m4a1-golden-coil.glb"
+    },
+    {
+      "path": "assets/weapons/cs2-skins/optional/previews/ak47-fire-serpent.webp",
+      "bytes": 17268,
+      "sha256": "6a2813e82d3e21645b402313be6f0cd4c27fc88ebc21fbbc00f022ef2660342b",
+      "group": "preview",
+      "localFile": "ak47-fire-serpent.webp"
+    },
+    {
+      "path": "assets/weapons/cs2-skins/optional/previews/m4a1-golden-coil.webp",
+      "bytes": 18220,
+      "sha256": "f15ab248a85e50387f96540630b6ebd8b6c3297f03e7e650b2e8b4351b818a37",
+      "group": "preview",
+      "localFile": "m4a1-golden-coil.webp"
+    }
+  ],
+  "skinReplacementDate": "2026-10-04T20:16:46.947620+00:00"
+}

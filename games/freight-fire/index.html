@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#182a38">
+  <meta name="description" content="经典运输船网页 FPS，本地人机对战与 Windows 局域网 4v4 / 8v8。">
+  <title>运输船 · Transport Ship</title>
+  <link rel="icon" type="image/svg+xml" href="./cover.svg">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./game.js"></script>
+</head>
+<body>
+  <canvas id="arena" aria-label="3D 货轮战场"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div id="loading" role="status">正在装载甲板…</div>
+  <div id="hud" hidden>
+    <div class="match-bar"><div class="blue-score"><span>保卫者</span><b id="score-blue">0</b></div><div class="match-clock"><strong id="clock">05:00</strong><small id="goal-label">先到 40 分</small></div><div class="orange-score"><b id="score-orange">0</b><span>潜伏者</span></div></div>
+    <div class="radar-wrap"><canvas id="radar" width="170" height="170" aria-label="战术雷达"></canvas><span>TRANSPORT / 运输船</span></div>
+    <div id="killfeed" aria-live="off"></div>
+    <div class="top-actions"><span id="network-state">本地人机</span><button id="menu-button" aria-label="打开菜单">ESC 菜单</button><button id="fullscreen" aria-label="切换全屏">⛶</button></div>
+    <div id="crosshair" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div id="scope" hidden aria-label="狙击瞄准镜" data-level="0"><div></div></div>
+    <div id="hitmarker" aria-hidden="true">×</div><div id="damage-flash" aria-hidden="true"></div>
+    <div id="death" hidden><div class="death-caption">你已阵亡</div><strong id="death-killer">对手</strong><div class="death-cause"><img id="death-weapon-icon" alt=""><span id="death-weapon"></span><img id="death-headshot" src="./assets/ui-cs2/headshot.svg" alt="爆头" hidden></div><p><b id="death-timer">3</b> 秒后重返战场</p></div>
+    <div id="notice" role="status"></div>
+    <div class="health-block"><small id="team-label">保卫者 / DEFENDER</small><div><span class="health-cross">+</span><b id="health">100</b><span>HP</span></div><div class="health-track"><i id="health-fill"></i></div></div>
+    <div class="weapon-block"><small id="weapon-name">M4A1-S</small><div id="ammo-line"><b id="ammo">30</b><span>/ <span id="reserve">120</span></span></div><p id="reload-state">R 换弹 · B 出生区装备</p></div>
+    <div id="weapon-slots" aria-label="随身武器"><button data-equip-slot="1" aria-label="装备主武器"><kbd>1</kbd><img src="./assets/ui-cs2/m4a1.svg" alt="M4A1-S"><span class="slot-name">M4A1-S</span></button><button data-equip-slot="2" aria-label="装备手枪"><kbd>2</kbd><img src="./assets/ui-cs2/usp.svg" alt="USP-S"><span class="slot-name">USP-S</span></button><button data-equip-slot="3" aria-label="装备刀"><kbd>3</kbd><img src="./assets/ui-cs2/knife.svg" alt="战术匕首"><span class="slot-name">战术匕首</span></button></div>
+    <div class="bottom-guide">WASD 移动 <em>·</em> 左键开火 / 轻刀 <em>·</em> 右键瞄准 / 重刀 <em>·</em> B 出生区装备 <em>·</em> TAB 战绩</div>
+    <div id="performance">— FPS</div>
+  </div>
+  <section id="menu" class="menu-surface" aria-labelledby="game-title">
+    <div class="briefing"><div class="overline"><span class="signal"></span> FREIGHT FIRE</div><p class="operation">经典地图 · 团队竞技</p><h1 id="game-title"><span class="title-cn">运输船</span><small>TRANSPORT SHIP</small></h1><p class="intro">选择阵营，出发交战。<br>中路推进、侧翼绕行，配合队友赢下这一局。</p><div class="map-note"><div><strong>双端出生 · 多路出击</strong><p>左右出口 / 中路掩体 / 侧道高台</p></div></div><a href="../../index.html" class="back">← 运输船首页</a></div>
+    <div class="setup-panel">
+      <div class="panel-heading"><span id="panel-caption">开始对战</span><small>运输船</small></div>
+      <div class="mode-tabs" role="group" aria-label="对战模式"><button class="selected" data-mode="offline" aria-pressed="true">人机对战</button><button data-mode="lan" aria-pressed="false">局域网好友</button></div>
+      <label class="field">呼号<input id="nickname" maxlength="18" value="新兵" autocomplete="nickname"></label>
+      <div class="field-row"><label class="field">编制<select id="size"><option value="4">4 v 4 · 8 人</option><option value="8">8 v 8 · 16 人</option></select></label><label class="field">目标分数<select id="goal"><option value="40">40 击杀</option><option value="80">80 击杀</option><option value="20">20 击杀</option></select></label></div>
+      <div class="field-row"><label class="field">AI 强度<select id="difficulty"><option value="normal">标准</option><option value="easy">新兵</option><option value="hard">老兵</option></select></label><label class="field">画质<select id="quality"><option value="medium">均衡</option><option value="high">高画质</option><option value="low">流畅</option></select></label></div>
+      <div id="offline-options" class="team-choice"><span>选择阵营</span><div><button data-team="0" class="selected" aria-pressed="true">保卫者</button><button data-team="1" aria-pressed="false">潜伏者</button></div></div>
+      <div id="lan-options" hidden><p class="lan-help">双击源码包内 <b>start-fps-lan.cmd</b> 开服，再使用开服窗口中的地址打开游戏。好友须在同一局域网。</p><label class="field">房间邀请码<input id="room-code" placeholder="创建房间，或粘贴邀请码" autocomplete="off" maxlength="40"></label><div class="lan-controls"><button id="create-room">创建房间</button><button id="join-room">加入房间</button></div><div id="room-list"></div></div>
+      <button id="start" class="deploy">开始人机对战 <span>↗</span></button>
+      <button id="resume" class="deploy" hidden>返回战场 <span>↗</span></button>
+      <div id="session-actions" hidden><button id="restart">重开一局</button><button id="invite" hidden>复制好友邀请</button><button id="leave">离开对局</button></div>
+      <div id="invite-info" hidden><textarea id="invite-text" readonly aria-label="好友邀请链接"></textarea><small>只生成邀请信息，请自行发给好友。</small></div>
+      <p id="status" class="status" role="status">人机模式可直接开始。邀请好友请选择局域网模式。</p>
+      <details class="instructions"><summary>操作与玩法</summary><p>WASD 移动，鼠标转向。出生区按 B 选择一把主武器；1 主武器、2 手枪、3 刀，滚轮切换随身武器。左键开火或轻刀，右键瞄准或重刀；AWP 右键循环两档倍率与退镜。轻刀两次、重刀一次可击败满血敌人。R 换弹，空格跳跃，Shift 静步，Ctrl 蹲下，Tab 战绩，Esc 菜单。出生保护 2 秒，阵亡后 3 秒复活。</p><p>浏览器不能锁定鼠标时，可按住左键拖动转向，F 键开火。移动端支持触屏双摇杆。</p><p>网页练习作品，与官方游戏无关联。<a href="./credits.html" target="_blank" rel="noopener noreferrer">素材来源与署名</a>。</p></details>
+    </div>
+  </section>
+  <section id="loadout" class="loadout-surface" role="dialog" aria-modal="true" aria-labelledby="loadout-title" hidden><div class="loadout-panel"><header><div><small>出生区装备</small><h2 id="loadout-title">选择主武器</h2></div><button id="loadout-close" aria-label="关闭装备选择">ESC ×</button></header><p>选一把主武器出击，手枪与刀始终随身。</p><div class="loadout-options"><button data-primary="0"><kbd>1</kbd><img src="./assets/ui-cs2/m4a1.svg" alt=""><strong>M4A1-S</strong><span>30 发 · 稳定连射</span><small>选择并装备 ↗</small></button><button data-primary="1"><kbd>2</kbd><img src="./assets/ui-cs2/ak47.svg" alt=""><strong>AK-47</strong><span>30 发 · 高伤害</span><small>选择并装备 ↗</small></button><button data-primary="2"><kbd>3</kbd><img src="./assets/ui-cs2/awp.svg" alt=""><strong>AWP</strong><span>5 发 · 两级瞄准</span><small>选择并装备 ↗</small></button></div><footer>仅在己方出生区可更换主武器 <span>B 返回战场</span></footer></div></section>
+  <div id="scoreboard" class="scoreboard" hidden><div class="scoreboard-card"><div class="scoreboard-heading"><h2 id="result-title">本局战绩</h2><span id="result-score"></span></div><div id="rosters"></div><div id="result-actions" hidden><button id="result-restart" class="deploy">再来一局 ↗</button><button id="result-menu">返回菜单</button></div></div></div>
+  <div id="touch-controls" hidden><div id="move-pad" class="touch-pad">移动</div><div id="look-pad" class="touch-pad">瞄准</div><div class="touch-buttons"><button id="touch-fire">开火</button><button id="touch-aim">瞄准 / 重刀</button><button id="touch-reload">换弹</button><button id="touch-jump">跳跃</button><button id="touch-weapon">切枪</button><button id="touch-buy">装备</button></div></div>
+  <noscript>开启 JavaScript 才能进入战场。</noscript>
+</body>
+</html>

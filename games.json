@@ -1,0 +1,23 @@
+[
+  {
+    "id": "freight-fire",
+    "title": "运输船",
+    "subtitle": "Transport Ship",
+    "description": "重新踏上经典货轮甲板。3D FPS，人机对战与 4v4 / 8v8 局域网。",
+    "category": "射击",
+    "tags": [
+      "3D",
+      "FPS",
+      "人机",
+      "局域网"
+    ],
+    "controls": [
+      "键鼠",
+      "触屏"
+    ],
+    "entry": "games/freight-fire/index.html",
+    "cover": "games/freight-fire/cover.svg",
+    "accent": "#496b7b",
+    "featured": false
+  }
+]

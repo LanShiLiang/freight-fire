@@ -1,0 +1,176 @@
+[
+  {
+    "asset": "metal_plate_02",
+    "name": "Metal Plate 02",
+    "authors": {
+      "Rob Tuytel": "All"
+    },
+    "source": "https://polyhaven.com/a/metal_plate_02",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "Diffuse",
+    "file": "metal_plate_02_diff_1k.jpg",
+    "bytes": 625917,
+    "md5": "531b7e067dc537e0b3c7962175e04ffd",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/metal_plate_02/metal_plate_02_diff_1k.jpg",
+    "dimensionsCm": [
+      2000,
+      2000
+    ]
+  },
+  {
+    "asset": "metal_plate_02",
+    "name": "Metal Plate 02",
+    "authors": {
+      "Rob Tuytel": "All"
+    },
+    "source": "https://polyhaven.com/a/metal_plate_02",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "nor_gl",
+    "file": "metal_plate_02_nor_gl_1k.jpg",
+    "bytes": 183264,
+    "md5": "ce8198004fd9409f592a7f024be0c01e",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/metal_plate_02/metal_plate_02_nor_gl_1k.jpg",
+    "dimensionsCm": [
+      2000,
+      2000
+    ]
+  },
+  {
+    "asset": "metal_plate_02",
+    "name": "Metal Plate 02",
+    "authors": {
+      "Rob Tuytel": "All"
+    },
+    "source": "https://polyhaven.com/a/metal_plate_02",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "arm",
+    "file": "metal_plate_02_arm_1k.jpg",
+    "bytes": 1075839,
+    "md5": "ff6e0499763d76c76b1568b16f5f93f6",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/metal_plate_02/metal_plate_02_arm_1k.jpg",
+    "dimensionsCm": [
+      2000,
+      2000
+    ]
+  },
+  {
+    "asset": "green_metal_rust",
+    "name": "Green Metal Rust",
+    "authors": {
+      "Rob Tuytel": "All"
+    },
+    "source": "https://polyhaven.com/a/green_metal_rust",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "Diffuse",
+    "file": "green_metal_rust_diff_1k.jpg",
+    "bytes": 212088,
+    "md5": "f69d8c507961f0629019652162090917",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/green_metal_rust/green_metal_rust_diff_1k.jpg",
+    "dimensionsCm": [
+      1000,
+      1000
+    ]
+  },
+  {
+    "asset": "green_metal_rust",
+    "name": "Green Metal Rust",
+    "authors": {
+      "Rob Tuytel": "All"
+    },
+    "source": "https://polyhaven.com/a/green_metal_rust",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "nor_gl",
+    "file": "green_metal_rust_nor_gl_1k.jpg",
+    "bytes": 121379,
+    "md5": "a6cefc436aa41f73f15347dcf7a791d0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/green_metal_rust/green_metal_rust_nor_gl_1k.jpg",
+    "dimensionsCm": [
+      1000,
+      1000
+    ]
+  },
+  {
+    "asset": "green_metal_rust",
+    "name": "Green Metal Rust",
+    "authors": {
+      "Rob Tuytel": "All"
+    },
+    "source": "https://polyhaven.com/a/green_metal_rust",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "arm",
+    "file": "green_metal_rust_arm_1k.jpg",
+    "bytes": 108674,
+    "md5": "f7474f11a76b3747265873c325ecbb88",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/green_metal_rust/green_metal_rust_arm_1k.jpg",
+    "dimensionsCm": [
+      1000,
+      1000
+    ]
+  },
+  {
+    "asset": "wooden_planks",
+    "name": "Wooden Planks",
+    "authors": {
+      "Dario Barresi": "Processing",
+      "Charlotte Baglioni": "Photography"
+    },
+    "source": "https://polyhaven.com/a/wooden_planks",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "Diffuse",
+    "file": "wooden_planks_diff_1k.jpg",
+    "bytes": 489587,
+    "md5": "045a70f787fcb4b60ee5c9878a9bd674",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wooden_planks/wooden_planks_diff_1k.jpg",
+    "dimensionsCm": [
+      2000,
+      2000
+    ]
+  },
+  {
+    "asset": "wooden_planks",
+    "name": "Wooden Planks",
+    "authors": {
+      "Dario Barresi": "Processing",
+      "Charlotte Baglioni": "Photography"
+    },
+    "source": "https://polyhaven.com/a/wooden_planks",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "nor_gl",
+    "file": "wooden_planks_nor_gl_1k.jpg",
+    "bytes": 705118,
+    "md5": "03206d820a026239db91a1ff3d8c589d",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wooden_planks/wooden_planks_nor_gl_1k.jpg",
+    "dimensionsCm": [
+      2000,
+      2000
+    ]
+  },
+  {
+    "asset": "wooden_planks",
+    "name": "Wooden Planks",
+    "authors": {
+      "Dario Barresi": "Processing",
+      "Charlotte Baglioni": "Photography"
+    },
+    "source": "https://polyhaven.com/a/wooden_planks",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://polyhaven.com/license",
+    "map": "arm",
+    "file": "wooden_planks_arm_1k.jpg",
+    "bytes": 468546,
+    "md5": "f11bed43f21564cf9468e2e27dda22c5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wooden_planks/wooden_planks_arm_1k.jpg",
+    "dimensionsCm": [
+      2000,
+      2000
+    ]
+  }
+]

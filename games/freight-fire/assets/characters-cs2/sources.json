@@ -1,0 +1,29 @@
+{
+  "source": "https://github.com/ETO-ze/dust2-web",
+  "commit": "8b0f9f68772601237ad1a5385868368e9306edd1",
+  "mirror": "https://cs2.duskrain.cn/",
+  "license": "Original Valve Counter-Strike 2 assets; Valve retains all rights. Public mirror is not an open-source license.",
+  "assets": [
+    {
+      "path": "assets/characters-cs2/ct-sas.glb",
+      "bytes": 3974156,
+      "sha256": "06fb306077ffab8f9d5fd5a9593f2fc82ed09aaf96061005299a377ad0e2da91",
+      "group": "agent",
+      "url": "https://cs2.duskrain.cn/assets/characters-cs2/ct-sas.glb"
+    },
+    {
+      "path": "assets/characters-cs2/t-phoenix.glb",
+      "bytes": 4804936,
+      "sha256": "eda1202f89846b10aac030b4f223c508a33b98c28ec197c5abdbc899e7dc179a",
+      "group": "agent",
+      "url": "https://cs2.duskrain.cn/assets/characters-cs2/t-phoenix.glb"
+    },
+    {
+      "path": "assets/characters-cs2/animations.glb",
+      "bytes": 4802692,
+      "sha256": "993d09b839aaf541e0cede03fb6d219f346fc9773efb90ffb7eb1aa0c91fe85f",
+      "group": "characters",
+      "url": "https://cs2.duskrain.cn/assets/characters-cs2/animations.glb"
+    }
+  ]
+}

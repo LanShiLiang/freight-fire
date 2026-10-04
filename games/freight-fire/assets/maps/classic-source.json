@@ -1,0 +1,20 @@
+{
+  "url": "https://gamebanana.com/mods/111054",
+  "authors": [
+    "SmileGate (original map)",
+    "Riding crab snails (conversion)",
+    "ElysiumLeoSK (compile/screenshots)"
+  ],
+  "sourceSha256": "e9726d303745c0541f1df1bafbee4370b47c96349956111b4e0ee534bf4c7bea",
+  "sourceUnitScale": 0.024444444444444446,
+  "transform": {
+    "sourceCentre": [
+      184.0,
+      142.0,
+      65.0
+    ],
+    "axes": "[-X, Z, Y]"
+  },
+  "originalEngineUnitsVerified": false,
+  "adaptation": "Numeric structural geometry only. Repainted with bundled CC0 PBR materials. No original textures, logos, entities or code copied."
+}

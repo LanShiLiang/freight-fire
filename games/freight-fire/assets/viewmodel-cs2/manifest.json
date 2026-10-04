@@ -1,0 +1,194 @@
+{
+  "source": "User local CS2 installation, read-only S2V 20 export",
+  "arms": "weapons/models/shared/arms/weapon_arms.vmdl_c",
+  "animationTracks": "Original Source 2 .vnmclip tracks; camera-space placement and matching skin skeletons retained.",
+  "clips": [
+    {
+      "id": "ak47",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\ak47-draw_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "ak47",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\ak47-idle_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "ak47",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\ak47-lookat01_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "ak47",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\ak47-reload_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "ak47",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\ak47-shoot1_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\awp-draw_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\awp-idle_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\awp-lookat01_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\awp-reload_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\awp-shoot1_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "knife",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\knife-draw_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "heavy",
+      "source": "artifacts\\viewmodel\\knife-heavy_miss1_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\knife-idle1_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\knife-light_miss1_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "shoot2",
+      "source": "artifacts\\viewmodel\\knife-light_miss2_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\knife-lookat01_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "m4a1",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\m4a1-draw_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "m4a1",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\m4a1-idle_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "m4a1",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\m4a1-lookat01_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "m4a1",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\m4a1-reload_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "m4a1",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\m4a1-shoot1_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "pistol",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\pistol-draw_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "pistol",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\pistol-idle_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "pistol",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\pistol-lookat01_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "pistol",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\pistol-reload_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "pistol",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\pistol-shoot1_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "usp",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\usp-draw_silenced_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "usp",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\usp-idle_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "usp",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\usp-lookat01_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "usp",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\usp-reload_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "usp",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\usp-shoot1_pistol.glb",
+      "channels": 198
+    }
+  ],
+  "bytes": 4323500
+}

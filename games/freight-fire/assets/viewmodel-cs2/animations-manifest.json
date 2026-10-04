@@ -1,0 +1,1135 @@
+{
+  "source": "Installed Counter-Strike 2, read-only original vnmclip export",
+  "clips": [
+    {
+      "id": "ak47",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\ak47-draw_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "ak47",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\ak47-idle_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "ak47",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\ak47-lookat01_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "ak47",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\ak47-reload_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "ak47",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\ak47-shoot1_ak.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\awp-draw_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\awp-idle_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\awp-lookat01_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\awp-reload_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "awp",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\awp-shoot1_awp.glb",
+      "channels": 192
+    },
+    {
+      "id": "knife",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\knife-draw_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "heavy",
+      "source": "artifacts\\viewmodel\\knife-heavy_miss1_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\knife-idle1_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\knife-light_miss1_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "shoot2",
+      "source": "artifacts\\viewmodel\\knife-light_miss2_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "knife",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\knife-lookat01_karambit.glb",
+      "channels": 177
+    },
+    {
+      "id": "m4a1",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\m4a1-draw_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "m4a1",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\m4a1-idle_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "m4a1",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\m4a1-lookat01_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "m4a1",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\m4a1-reload_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "m4a1",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\m4a1-shoot1_rifle.glb",
+      "channels": 195
+    },
+    {
+      "id": "pistol",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\pistol-draw_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "pistol",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\pistol-idle_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "pistol",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\pistol-lookat01_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "pistol",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\pistol-reload_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "pistol",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\pistol-shoot1_glock.glb",
+      "channels": 189
+    },
+    {
+      "id": "usp",
+      "action": "draw",
+      "source": "artifacts\\viewmodel\\usp-draw_silenced_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "usp",
+      "action": "idle",
+      "source": "artifacts\\viewmodel\\usp-idle_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "usp",
+      "action": "inspect",
+      "source": "artifacts\\viewmodel\\usp-lookat01_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "usp",
+      "action": "reload",
+      "source": "artifacts\\viewmodel\\usp-reload_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "usp",
+      "action": "shoot",
+      "source": "artifacts\\viewmodel\\usp-shoot1_pistol.glb",
+      "channels": 198
+    },
+    {
+      "id": "bizon",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\bizon-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "bizon",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\bizon-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "bizon",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\bizon-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "bizon",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\bizon-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "bizon",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\bizon-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "c4",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\c4-draw.glb",
+      "channels": 183
+    },
+    {
+      "id": "c4",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\c4-idle.glb",
+      "channels": 183
+    },
+    {
+      "id": "c4",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\c4-inspect.glb",
+      "channels": 183
+    },
+    {
+      "id": "c4",
+      "action": "plant",
+      "source": "artifacts\\weapon-expansion\\animations\\c4-plant.glb",
+      "channels": 183
+    },
+    {
+      "id": "deagle",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\deagle-draw.glb",
+      "channels": 192
+    },
+    {
+      "id": "deagle",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\deagle-idle.glb",
+      "channels": 192
+    },
+    {
+      "id": "deagle",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\deagle-inspect.glb",
+      "channels": 192
+    },
+    {
+      "id": "deagle",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\deagle-reload.glb",
+      "channels": 192
+    },
+    {
+      "id": "deagle",
+      "action": "reloadEmpty",
+      "source": "artifacts\\weapon-expansion\\animations\\deagle-reloadEmpty.glb",
+      "channels": 192
+    },
+    {
+      "id": "deagle",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\deagle-shoot.glb",
+      "channels": 192
+    },
+    {
+      "id": "decoy",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-draw.glb",
+      "channels": 186
+    },
+    {
+      "id": "decoy",
+      "action": "holdHigh",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-holdHigh.glb",
+      "channels": 186
+    },
+    {
+      "id": "decoy",
+      "action": "holdLow",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-holdLow.glb",
+      "channels": 186
+    },
+    {
+      "id": "decoy",
+      "action": "holdMid",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-holdMid.glb",
+      "channels": 186
+    },
+    {
+      "id": "decoy",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-idle.glb",
+      "channels": 186
+    },
+    {
+      "id": "decoy",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-inspect.glb",
+      "channels": 186
+    },
+    {
+      "id": "decoy",
+      "action": "pullpin",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-pullpin.glb",
+      "channels": 186
+    },
+    {
+      "id": "decoy",
+      "action": "throw",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-throw.glb",
+      "channels": 186
+    },
+    {
+      "id": "decoy",
+      "action": "throwUnderhand",
+      "source": "artifacts\\weapon-expansion\\animations\\decoy-throwUnderhand.glb",
+      "channels": 186
+    },
+    {
+      "id": "elite",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\elite-draw.glb",
+      "channels": 222
+    },
+    {
+      "id": "elite",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\elite-idle.glb",
+      "channels": 222
+    },
+    {
+      "id": "elite",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\elite-inspect.glb",
+      "channels": 222
+    },
+    {
+      "id": "elite",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\elite-reload.glb",
+      "channels": 222
+    },
+    {
+      "id": "elite",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\elite-shoot.glb",
+      "channels": 222
+    },
+    {
+      "id": "elite",
+      "action": "shoot2",
+      "source": "artifacts\\weapon-expansion\\animations\\elite-shoot2.glb",
+      "channels": 222
+    },
+    {
+      "id": "fiveseven",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\fiveseven-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "fiveseven",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\fiveseven-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "fiveseven",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\fiveseven-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "fiveseven",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\fiveseven-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "fiveseven",
+      "action": "reloadEmpty",
+      "source": "artifacts\\weapon-expansion\\animations\\fiveseven-reloadEmpty.glb",
+      "channels": 189
+    },
+    {
+      "id": "fiveseven",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\fiveseven-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "flashbang",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-draw.glb",
+      "channels": 186
+    },
+    {
+      "id": "flashbang",
+      "action": "holdHigh",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-holdHigh.glb",
+      "channels": 186
+    },
+    {
+      "id": "flashbang",
+      "action": "holdLow",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-holdLow.glb",
+      "channels": 186
+    },
+    {
+      "id": "flashbang",
+      "action": "holdMid",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-holdMid.glb",
+      "channels": 186
+    },
+    {
+      "id": "flashbang",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-idle.glb",
+      "channels": 186
+    },
+    {
+      "id": "flashbang",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-inspect.glb",
+      "channels": 186
+    },
+    {
+      "id": "flashbang",
+      "action": "pullpin",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-pullpin.glb",
+      "channels": 186
+    },
+    {
+      "id": "flashbang",
+      "action": "throw",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-throw.glb",
+      "channels": 186
+    },
+    {
+      "id": "flashbang",
+      "action": "throwUnderhand",
+      "source": "artifacts\\weapon-expansion\\animations\\flashbang-throwUnderhand.glb",
+      "channels": 186
+    },
+    {
+      "id": "galilar",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\galilar-draw.glb",
+      "channels": 192
+    },
+    {
+      "id": "galilar",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\galilar-idle.glb",
+      "channels": 192
+    },
+    {
+      "id": "galilar",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\galilar-inspect.glb",
+      "channels": 192
+    },
+    {
+      "id": "galilar",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\galilar-reload.glb",
+      "channels": 192
+    },
+    {
+      "id": "galilar",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\galilar-shoot.glb",
+      "channels": 192
+    },
+    {
+      "id": "hegrenade",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-draw.glb",
+      "channels": 186
+    },
+    {
+      "id": "hegrenade",
+      "action": "holdHigh",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-holdHigh.glb",
+      "channels": 186
+    },
+    {
+      "id": "hegrenade",
+      "action": "holdLow",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-holdLow.glb",
+      "channels": 186
+    },
+    {
+      "id": "hegrenade",
+      "action": "holdMid",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-holdMid.glb",
+      "channels": 186
+    },
+    {
+      "id": "hegrenade",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-idle.glb",
+      "channels": 186
+    },
+    {
+      "id": "hegrenade",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-inspect.glb",
+      "channels": 186
+    },
+    {
+      "id": "hegrenade",
+      "action": "pullpin",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-pullpin.glb",
+      "channels": 186
+    },
+    {
+      "id": "hegrenade",
+      "action": "throw",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-throw.glb",
+      "channels": 186
+    },
+    {
+      "id": "hegrenade",
+      "action": "throwUnderhand",
+      "source": "artifacts\\weapon-expansion\\animations\\hegrenade-throwUnderhand.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-draw.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "holdHigh",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-holdHigh.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "holdLow",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-holdLow.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "holdMid",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-holdMid.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-idle.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-inspect.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "pullpin",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-pullpin.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "throw",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-throw.glb",
+      "channels": 186
+    },
+    {
+      "id": "incgrenade",
+      "action": "throwUnderhand",
+      "source": "artifacts\\weapon-expansion\\animations\\incgrenade-throwUnderhand.glb",
+      "channels": 186
+    },
+    {
+      "id": "m4a4",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\m4a4-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "m4a4",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\m4a4-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "m4a4",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\m4a4-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "m4a4",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\m4a4-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "m4a4",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\m4a4-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "mac10",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\mac10-draw.glb",
+      "channels": 234
+    },
+    {
+      "id": "mac10",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\mac10-idle.glb",
+      "channels": 234
+    },
+    {
+      "id": "mac10",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\mac10-inspect.glb",
+      "channels": 234
+    },
+    {
+      "id": "mac10",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\mac10-reload.glb",
+      "channels": 234
+    },
+    {
+      "id": "mac10",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\mac10-shoot.glb",
+      "channels": 234
+    },
+    {
+      "id": "mag7",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\mag7-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "mag7",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\mag7-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "mag7",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\mag7-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "mag7",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\mag7-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "mag7",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\mag7-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "molotov",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-draw.glb",
+      "channels": 198
+    },
+    {
+      "id": "molotov",
+      "action": "holdHigh",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-holdHigh.glb",
+      "channels": 198
+    },
+    {
+      "id": "molotov",
+      "action": "holdLow",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-holdLow.glb",
+      "channels": 198
+    },
+    {
+      "id": "molotov",
+      "action": "holdMid",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-holdMid.glb",
+      "channels": 198
+    },
+    {
+      "id": "molotov",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-idle.glb",
+      "channels": 198
+    },
+    {
+      "id": "molotov",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-inspect.glb",
+      "channels": 198
+    },
+    {
+      "id": "molotov",
+      "action": "pullpin",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-pullpin.glb",
+      "channels": 198
+    },
+    {
+      "id": "molotov",
+      "action": "throw",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-throw.glb",
+      "channels": 198
+    },
+    {
+      "id": "molotov",
+      "action": "throwUnderhand",
+      "source": "artifacts\\weapon-expansion\\animations\\molotov-throwUnderhand.glb",
+      "channels": 198
+    },
+    {
+      "id": "mp7",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\mp7-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp7",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\mp7-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp7",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\mp7-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp7",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\mp7-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp7",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\mp7-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp9",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\mp9-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp9",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\mp9-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp9",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\mp9-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp9",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\mp9-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "mp9",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\mp9-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "nova",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\nova-draw.glb",
+      "channels": 195
+    },
+    {
+      "id": "nova",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\nova-idle.glb",
+      "channels": 195
+    },
+    {
+      "id": "nova",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\nova-inspect.glb",
+      "channels": 195
+    },
+    {
+      "id": "nova",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\nova-reload.glb",
+      "channels": 195
+    },
+    {
+      "id": "nova",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\nova-shoot.glb",
+      "channels": 195
+    },
+    {
+      "id": "p250",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\p250-draw.glb",
+      "channels": 192
+    },
+    {
+      "id": "p250",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\p250-idle.glb",
+      "channels": 192
+    },
+    {
+      "id": "p250",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\p250-inspect.glb",
+      "channels": 192
+    },
+    {
+      "id": "p250",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\p250-reload.glb",
+      "channels": 192
+    },
+    {
+      "id": "p250",
+      "action": "reloadEmpty",
+      "source": "artifacts\\weapon-expansion\\animations\\p250-reloadEmpty.glb",
+      "channels": 192
+    },
+    {
+      "id": "p250",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\p250-shoot.glb",
+      "channels": 192
+    },
+    {
+      "id": "pistol",
+      "action": "reloadEmpty",
+      "source": "artifacts\\weapon-expansion\\animations\\pistol-reloadEmpty.glb",
+      "channels": 189
+    },
+    {
+      "id": "sawedoff",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\sawedoff-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "sawedoff",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\sawedoff-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "sawedoff",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\sawedoff-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "sawedoff",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\sawedoff-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "sawedoff",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\sawedoff-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "scar20",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\scar20-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "scar20",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\scar20-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "scar20",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\scar20-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "scar20",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\scar20-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "scar20",
+      "action": "reloadEmpty",
+      "source": "artifacts\\weapon-expansion\\animations\\scar20-reloadEmpty.glb",
+      "channels": 189
+    },
+    {
+      "id": "scar20",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\scar20-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "sg553",
+      "action": "aimIdle",
+      "source": "artifacts\\weapon-expansion\\animations\\sg553-aimIdle.glb",
+      "channels": 189
+    },
+    {
+      "id": "sg553",
+      "action": "aimShoot",
+      "source": "artifacts\\weapon-expansion\\animations\\sg553-aimShoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "sg553",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\sg553-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "sg553",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\sg553-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "sg553",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\sg553-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "sg553",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\sg553-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "sg553",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\sg553-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "smokegrenade",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-draw.glb",
+      "channels": 186
+    },
+    {
+      "id": "smokegrenade",
+      "action": "holdHigh",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-holdHigh.glb",
+      "channels": 186
+    },
+    {
+      "id": "smokegrenade",
+      "action": "holdLow",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-holdLow.glb",
+      "channels": 186
+    },
+    {
+      "id": "smokegrenade",
+      "action": "holdMid",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-holdMid.glb",
+      "channels": 186
+    },
+    {
+      "id": "smokegrenade",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-idle.glb",
+      "channels": 186
+    },
+    {
+      "id": "smokegrenade",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-inspect.glb",
+      "channels": 186
+    },
+    {
+      "id": "smokegrenade",
+      "action": "pullpin",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-pullpin.glb",
+      "channels": 186
+    },
+    {
+      "id": "smokegrenade",
+      "action": "throw",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-throw.glb",
+      "channels": 186
+    },
+    {
+      "id": "smokegrenade",
+      "action": "throwUnderhand",
+      "source": "artifacts\\weapon-expansion\\animations\\smokegrenade-throwUnderhand.glb",
+      "channels": 186
+    },
+    {
+      "id": "ssg08",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\ssg08-drawLegacy.glb",
+      "channels": 192
+    },
+    {
+      "id": "ssg08",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\ssg08-idleLegacy.glb",
+      "channels": 192
+    },
+    {
+      "id": "ssg08",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\ssg08-inspectLegacy.glb",
+      "channels": 192
+    },
+    {
+      "id": "ssg08",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\ssg08-reloadLegacy.glb",
+      "channels": 192
+    },
+    {
+      "id": "ssg08",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\ssg08-shootLegacy.glb",
+      "channels": 192
+    },
+    {
+      "id": "tec9",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\tec9-draw.glb",
+      "channels": 189
+    },
+    {
+      "id": "tec9",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\tec9-idle.glb",
+      "channels": 189
+    },
+    {
+      "id": "tec9",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\tec9-inspect.glb",
+      "channels": 189
+    },
+    {
+      "id": "tec9",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\tec9-reload.glb",
+      "channels": 189
+    },
+    {
+      "id": "tec9",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\tec9-shoot.glb",
+      "channels": 189
+    },
+    {
+      "id": "usp",
+      "action": "reloadEmpty",
+      "source": "artifacts\\weapon-expansion\\animations\\usp-reloadEmpty.glb",
+      "channels": 198
+    },
+    {
+      "id": "xm1014",
+      "action": "draw",
+      "source": "artifacts\\weapon-expansion\\animations\\xm1014-draw.glb",
+      "channels": 195
+    },
+    {
+      "id": "xm1014",
+      "action": "idle",
+      "source": "artifacts\\weapon-expansion\\animations\\xm1014-idle.glb",
+      "channels": 195
+    },
+    {
+      "id": "xm1014",
+      "action": "inspect",
+      "source": "artifacts\\weapon-expansion\\animations\\xm1014-inspect.glb",
+      "channels": 195
+    },
+    {
+      "id": "xm1014",
+      "action": "reload",
+      "source": "artifacts\\weapon-expansion\\animations\\xm1014-reload.glb",
+      "channels": 195
+    },
+    {
+      "id": "xm1014",
+      "action": "shoot",
+      "source": "artifacts\\weapon-expansion\\animations\\xm1014-shoot.glb",
+      "channels": 195
+    }
+  ],
+  "bytes": 24213300,
+  "sha256": "85d272755ed243ed360f5f91895321e3dfcd0e0622b04537ec2f052aa59a76de"
+}

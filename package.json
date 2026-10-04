@@ -1,0 +1,38 @@
+{
+  "name": "transport-ship-fps",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Classic Transport Ship browser FPS with matched weapon/arm animations and local LAN matches.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LanShiLiang/freight-fire.git"
+  },
+  "homepage": "https://lslzqco.cn/ai-game-lab/games/freight-fire/",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test tests/fps-sim.test.mjs tests/fps-network.test.mjs tests/fps-audio.test.mjs",
+    "build": "node scripts/check.mjs && node scripts/build.mjs",
+    "preview": "node scripts/serve.mjs --preview",
+    "lan:fps": "node scripts/lan-server.mjs",
+    "test:fps:browser": "node scripts/freight-rebuild-qa.mjs",
+    "test:fps:rebuild": "node scripts/freight-rebuild-qa.mjs",
+    "test:fps:visual": "node scripts/fps-visual-qa.mjs",
+    "test:fps:rigs": "node scripts/cs2-rig-qa.mjs",
+    "test:fps:characters": "node scripts/characters-upgrade-qa.mjs",
+    "test:fps:public": "node scripts/freight-public-qa.mjs"
+  },
+  "dependencies": {
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0",
+    "three": "0.180.0"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-04T20:16:46.947620+00:00",
+  "source": "https://github.com/ETO-ze/dust2-web",
+  "upstreamLockVersion": "5a82c6eead18b7e0",
+  "geometryPolicy": "Original model and arm/finger animation remain byte-for-byte unchanged; replace original complete PBR skin files only.",
+  "skins": [
+    {
+      "previous": "m4a1-printstream",
+      "file": "m4a1-golden-coil.glb",
+      "model": "M4A1-S | Golden Coil",
+      "paintKit": 497,
+      "sha256": "f74ff219e5cc3087ed36e0935637c6bdade5772d28ed1cfb8f1376f9fde38ef3",
+      "primarySources": [
+        "https://steamcommunity.com/market/listings/730/M4A1-S%20%7C%20Golden%20Coil%20%28Factory%20New%29",
+        "https://steamcommunity.com/sharedfiles/filedetails/?id=460239102"
+      ],
+      "nodesAndRestTransformsIdentical": true,
+      "geometryAccessorsIdentical": [
+        "POSITION",
+        "TEXCOORD_0",
+        "NORMAL",
+        "TANGENT",
+        "TEXCOORD_1",
+        "JOINTS_0",
+        "WEIGHTS_0",
+        "indices"
+      ],
+      "skinJointIndicesIdentical": true,
+      "inverseBindMatricesIdentical": true,
+      "embeddedTextureSha256": [
+        "899441df2b8b61cdff0131786e87ac470fe5e7d089ff65a45b6c7fedc8bc0193",
+        "95b8816e16915bce94f15af9e1c24a28513053edd21ebdfd6b4ebc8894ea2fa2",
+        "184559bf3ee8b31b8be9e8882b7a24d23a524c77f0a39083b04b01897a3ab440"
+      ],
+      "previousTextureSha256": [
+        "2bfb3ff2cc624a02e999fcffdd340f95051caf61bc97bbecf51e4244168cd017",
+        "0e3984c253f36f144dc3390e2e451cfd0c23d7e47b7fe76cbd107ddc7bf5c68a",
+        "49674a28d7c0bd12cd42dd5fa06be518dde0fb74a9d9f4e39a2c5950ee77c19b",
+        "c53aeafde1b9f2f9698519b0c3a79299d6b2df69d7fc12212968bf2f150bbd6a"
+      ],
+      "texturesDiffer": true
+    },
+    {
+      "previous": "ak47-vulcan",
+      "file": "ak47-fire-serpent.glb",
+      "model": "AK-47 | Fire Serpent",
+      "paintKit": 180,
+      "sha256": "3591d83e3c1de5eab06d4d656fbc0d6a6a753d984df438edb97c7d0549af2550",
+      "primarySources": [
+        "https://steamcommunity.com/market/listings/730/AK-47%20%7C%20Fire%20Serpent%20%28Factory%20New%29"
+      ],
+      "nodesAndRestTransformsIdentical": true,
+      "geometryAccessorsIdentical": [
+        "POSITION",
+        "TEXCOORD_0",
+        "NORMAL",
+        "TANGENT",
+        "TEXCOORD_1",
+        "JOINTS_0",
+        "WEIGHTS_0",
+        "indices"
+      ],
+      "skinJointIndicesIdentical": true,
+      "inverseBindMatricesIdentical": true,
+      "embeddedTextureSha256": [
+        "1662ed2ce8121a9de133be8432a20ee323045ecd2f13a847bc3d8d331c5332ce",
+        "0a29a7099c4c1670f5db5a57a8ba07b203353f758ce06992f5cbfa14975334bd",
+        "76098ae80de525cdd0b0c98467a0259eeb760b7a233060ac9d6928424e5a00bb"
+      ],
+      "previousTextureSha256": [
+        "1550fed579cda599f1a77d1cd49c87d853cc97b4981b999580c27939ecd2121e",
+        "82f0fdf6c0141bb43ec8b8af248fa6a2e79adea5c30c964140ffe23ef1c04b40",
+        "76098ae80de525cdd0b0c98467a0259eeb760b7a233060ac9d6928424e5a00bb"
+      ],
+      "texturesDiffer": true
+    }
+  ]
+}
