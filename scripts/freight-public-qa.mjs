@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { root } from './catalog.mjs';
@@ -11,7 +12,7 @@ if (!['http:', 'https:'].includes(target.protocol) || target.username || target.
 target.searchParams.set('qa', '1');
 const out = path.join(root, 'artifacts', 'freight-public');
 await mkdir(out, { recursive: true });
-const report = { date: new Date().toISOString(), url: target.href, checks: [], stages: [], screenshots: [],
+const report = { date: new Date().toISOString(), url: target.href, expectedRelease:process.env.FREIGHT_EXPECTED_RELEASE||null, moduleHashes:[], checks: [], stages: [], screenshots: [],
   errors: [], failedRequests: [], responses: [], limitations: [
     'One real Chrome session on the public deployment; local bot mode only.',
     'QA globals are read only; no fixture teleport, health/death or audio instrumentation.',
@@ -19,6 +20,7 @@ const report = { date: new Date().toISOString(), url: target.href, checks: [], s
   ] };
 const started = Date.now();
 let browser, page, pulse, closing = false, stageName = 'launch';
+const modules=['character-death.js','character-v2.js','render.js','death-camera.js','viewmodel-cs2.js','asset-loading.js','vendor/cannon-es.js'],moduleResponses=new Map();
 function stage(name) { stageName = name; report.stages.push({ name, elapsedMs: Date.now() - started }); console.log('STAGE ' + name); }
 function check(name, detail) { report.checks.push({ name, passed: true, detail }); console.log('PASS ' + name); }
 async function screenshot(name) { const file = name + '.png'; await page.screenshot({ path: path.join(out, file) }); report.screenshots.push(file); console.log('SCREENSHOT ' + file); }
@@ -71,6 +73,7 @@ try {
   page.on('pageerror', error => report.errors.push(error.message));
   page.on('requestfailed', request => { if (!closing) report.failedRequests.push({ url: request.url(), error: request.failure()?.errorText }); });
   page.on('response', response => {
+    for(const name of modules)if(new URL(response.url()).pathname===new URL(name,target).pathname)moduleResponses.set(name,response);
     const headers = response.headers();
     report.responses.push({ url: response.url(), status: response.status(), bytes: Number(headers['content-length'] || 0), encoding: headers['content-encoding'] || null });
     if (response.status() >= 400) report.failedRequests.push({ url: response.url(), status: response.status() });
@@ -81,6 +84,13 @@ try {
   await page.waitForFunction(() => window.__freight?.view?.viewModel, null, { timeout: 180000 });
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 180000 });
   report.readyMs = Date.now() - started;
+  for(const name of modules){
+    const response=moduleResponses.get(name);assert(response&&response.status()===200,'Actual page must load '+name);
+    const actual=createHash('sha256').update(await response.body()).digest('hex');
+    assert.equal(actual,createHash('sha256').update(await readFile(path.join(root,'games/freight-fire',name))).digest('hex'),name+' public/local mismatch');
+    report.moduleHashes.push({name,sha256:actual});
+  }
+  check('Actual public page modules match the final local source',{expectedRelease:report.expectedRelease,moduleHashes:report.moduleHashes});
   assert.equal(await page.locator('body').getAttribute('data-static'), 'true');
   assert.equal(await page.locator('[data-mode="lan"]').isVisible(), false);
   assert.equal(await page.locator('#sound').count(), 0);

@@ -84,7 +84,7 @@ function release(state){
   for(const constraint of [...state.world.constraints])state.world.removeConstraint(constraint);
   for(const body of [...state.world.bodies])state.world.removeBody(body);
   state.world.contacts.length=0;state.world.frictionEquations.length=0;
-  state.world=null;state.material=null;state.handMaterial=null;state.neutral=null;state.player=null;state.bindings.length=0;state.joints.length=0;state.bodies.length=0;state.poses.length=0;
+  state.world=null;state.supportSlide=null;state.material=null;state.handMaterial=null;state.neutral=null;state.player=null;state.bindings.length=0;state.joints.length=0;state.bodies.length=0;state.poses.length=0;
 }
 
 function createBody(state,bone,end,mass,width,depth,{center,radius,halfHeight,axis}={}){
@@ -305,17 +305,68 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
   return advanceCharacterDeath(group,0);
 }
 
+
+// A dead glove/cloth support can become a static tripod between the rounded
+// proxies even though the source limbs are relaxed. A measured persistent,
+// slowly changing sleeve/chest and arm/deck brace unlocks tangential friction
+// and the waist's passive swing. Normal contacts, gravity and joint limits
+// remain active; no body position, orientation, target pose or force is set.
+function allowSupportedClothSlide(state,advance=true){
+  if(state.world.time<.65)return false;
+  if(!state.supportSlide){
+    const find=name=>state.bindings.find(binding=>binding.bone.name===name);
+    const hip=find('pelvis'),head=find('head_0'),chest=find('spine_0');
+    const forearms=new Set(state.bindings.filter(binding=>/^arm_lower_/.test(binding.bone.name)).map(binding=>binding.body));
+    const arms=new Set(state.bindings.filter(binding=>/^(arm_|hand_)/.test(binding.bone.name)).map(binding=>binding.body));
+    state.supportSlide={hip,head,chest,forearms,arms,hold:0,released:false,releaseAge:null,headPoint:new CANNON.Vec3(),hipPoint:new CANNON.Vec3(),delta:new CANNON.Vec3(),
+      headOffset:cv(head.offset).negate(),hipOffset:cv(hip.offset).negate()};
+  }
+  const support=state.supportSlide,{hip,head,chest}=support;
+  head.body.pointToWorldFrame(support.headOffset,support.headPoint);hip.body.pointToWorldFrame(support.hipOffset,support.hipPoint);
+  support.headPoint.vsub(support.hipPoint,support.delta);
+  const ratio=Math.abs(support.delta.y)/Math.max(1e-8,support.delta.length());
+  if(advance){const rate=support.previousRatio===undefined?0:(ratio-support.previousRatio)/STEP;support.tiltRate=(support.tiltRate||0)*.85+rate*.15;support.previousRatio=ratio;}
+  let armLoad=0,sleeveLoad=0;
+  for(const contact of state.world.contacts){
+    if(contact.multiplier<=5)continue;
+    if((contact.bi.mass===0&&support.arms.has(contact.bj))||(contact.bj.mass===0&&support.arms.has(contact.bi)))armLoad=Math.max(armLoad,contact.multiplier);
+    if((contact.bi===chest.body&&support.forearms.has(contact.bj))||(contact.bj===chest.body&&support.forearms.has(contact.bi)))sleeveLoad=Math.max(sleeveLoad,contact.multiplier);
+  }
+  const elevated=ratio>.6&&armLoad;
+  if(advance&&!support.released){
+    const quiet=hip.body.velocity.length()<.6&&chest.body.velocity.length()<.6&&hip.body.angularVelocity.length()<1.5&&chest.body.angularVelocity.length()<1.5;
+    support.hold=state.world.time>1&&elevated&&sleeveLoad&&quiet&&Math.abs(support.tiltRate)<0.2?support.hold+STEP:0;
+    if(support.hold>=.02){
+      for(const contact of state.world.contactmaterials){
+        const deck=contact.materials.some(material=>material.name==='deck');
+        if(!deck||contact.materials.some(material=>material.name==='glove'))contact.friction=0;
+      }
+      const waist=state.joints.find(joint=>joint.name==='spine_0');waist.angle=60*DEG;waist.constraint.angle=waist.angle;
+      // Keep only scalar evidence from the preceding real physics contacts.
+      // No Body, equation or contact reference survives the whole-world freeze.
+      support.proof={age:state.world.time,sustainedSeconds:support.hold,torsoRatio:ratio,tiltRate:support.tiltRate,
+        armGroundLoad:armLoad,sleeveChestLoad:sleeveLoad,hipSpeed:hip.body.velocity.length(),chestSpeed:chest.body.velocity.length(),
+        hipAngularSpeed:hip.body.angularVelocity.length(),chestAngularSpeed:chest.body.angularVelocity.length(),
+        waistSwingDegrees:60,gloveDeckFriction:0,selfFriction:0};
+      support.released=true;support.releaseAge=state.world.time;
+    }
+  }
+  // Do not freeze a quiet hand-supported trunk before its finite slip window.
+  return elevated;
+}
+
 /** A stationary/paused/frozen corpse performs no physics or skin-vertex sampling. */
 export function advanceCharacterDeath(group,dt=1/60){
   const data=group.userData,state=data.deathState;if(!state||state.frozen)return data.deathStats;
   const elapsed=Math.min(MAX_AGE-state.age,clamp(Number(dt)||0,0,.1));if(elapsed===0&&state.contactPasses)return data.deathStats;
   state.age=Math.min(MAX_AGE,state.age+elapsed);state.accumulator+=elapsed;
   group.position.copy(state.origin);group.rotation.y=state.yaw;
-  while(state.accumulator>=STEP-1e-9){state.world.step(STEP);state.steps++;state.accumulator=Math.max(0,state.accumulator-STEP);}
+  while(state.accumulator>=STEP-1e-9){allowSupportedClothSlide(state);state.world.step(STEP);state.steps++;state.accumulator=Math.max(0,state.accumulator-STEP);}
   applyPhysicsPose(group,state);const measured=diagnostics(state);
   state.groundContactCount=state.world.contacts.filter(contact=>contact.bi.mass===0||contact.bj.mass===0).length;
   state.contactPasses++;
-  const quiet=state.age>.65&&measured.maxSpeed<.16&&measured.maxAngularSpeed<.35&&state.groundContactCount>0;
+  const waitingSupport=allowSupportedClothSlide(state,false);
+  const quiet=!waitingSupport&&state.age>.65&&measured.maxSpeed<.16&&measured.maxAngularSpeed<.35&&state.groundContactCount>0;
   state.quietTime=quiet?state.quietTime+elapsed:0;
   state.frozen=state.quietTime>=.3||measured.sleepingBodies===15||state.age>=MAX_AGE-1e-6;
   if(state.frozen)state.freezeReason=state.age>=MAX_AGE-1e-6?'time-budget':'sleep';
@@ -323,7 +374,8 @@ export function advanceCharacterDeath(group,dt=1/60){
   data.deathStats={age:state.age,clip:'ragdoll',engine:'cannon-es',source:'current skinned skeleton',once:true,phase:state.frozen?'frozen':'physics',
     groundContacts:true,horizontalContacts:false,collisionMode:'ground-only',contactVertices:state.contactVertices,contactPasses:state.contactPasses,
     rigidBodies:15,constraints:14,physicsSteps:state.steps,physicsStepSeconds:STEP,groundContactCount:state.groundContactCount,selfContactCount:state.world.contacts.length-state.groundContactCount,impulse:state.impulse,initialVelocity:state.initialVelocity,
-    frozen:state.frozen,freezeReason:state.freezeReason,...measured};
+    supportedClothSlip:!!state.supportSlide?.released,supportReleaseAge:state.supportSlide?.releaseAge??null,
+    supportReleaseProof:state.supportSlide?.proof?{...state.supportSlide.proof}:null,frozen:state.frozen,freezeReason:state.freezeReason,...measured};
   if(state.frozen)release(state);
   return data.deathStats;
 }

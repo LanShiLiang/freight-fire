@@ -31,6 +31,8 @@ const report={date:new Date().toISOString(),url:target.href,size,playSeconds,exp
     'Ragdoll permits genuine elbow/knee bends. Anatomy checks reject compressed bodies without requiring the old flat, straight death pose.',
     'Spread posture requires a head-to-far-ankle distance over 0.9m OR both hip-to-ankle leg spans over 0.60m OR a maximum leg span over 0.75m together with a far-ankle distance over 0.8m. All three paths additionally require the unchanged torso, minimum leg reach, bounds, ground, bone and joint checks.',
     'A frozen torso additionally requires abs(headY-pelvisY)/head-to-pelvis distance <=0.6; this rejects upright support even when total mesh height is under 1.05m.',
+    'Live material and waist checks read actual Cannon bodies, contact materials and constraint equations. A support-release proof reports prior physical contacts; it is compared with live state when observable, not treated as a replacement for that state.',
+    'A release that occurs inside the same render advance as whole-world freezing can have no observable live released world. Such a trigger is explicitly marked unobserved-active-state rather than claimed as a measured material transition.',
     'Camera aim and NDC checks establish direction and frustum membership, not lack of occlusion. Actual death-camera PNGs require a separate visual check that the corpse is visible.',
     'Physics cost records the naturally observed concurrent corpses, not a synthetic simultaneous-death benchmark.',
     'Head/boot proximity groups actual skinned vertices by their strongest bone weight and measures nearest vertex distances; this does not test triangle/surface intersections or prove that volumes do not overlap.',
@@ -49,10 +51,30 @@ async function fastFrozenPair(key){
   // the untouched game render normally; the timeout cannot hang a QA run.
   const pair=await page.evaluate(async key=>{
     const names=['pelvis','spine_0','spine_1','spine_2','spine_3','neck_0','head_0','arm_upper_L','arm_upper_R','arm_lower_L','arm_lower_R','hand_L','hand_R','leg_upper_L','leg_upper_R','leg_lower_L','leg_lower_R','ankle_L','ankle_R'];
+    // Copy primitive values from the real Cannon world; never retain or edit it.
+    const snapshotSupport=state=>{
+      if(!state)return null;
+      const material=m=>m?{id:m.id,name:m.name,friction:m.friction,restitution:m.restitution}:null;
+      const contact=cm=>({materials:cm.materials.map(material),friction:cm.friction,restitution:cm.restitution,
+        normalStiffness:cm.contactEquationStiffness,normalRelaxation:cm.contactEquationRelaxation,
+        frictionStiffness:cm.frictionEquationStiffness,frictionRelaxation:cm.frictionEquationRelaxation});
+      const waist=state.joints.find(joint=>joint.name==='spine_0'),slide=state.supportSlide;
+      const bodyName=body=>state.bindings.find(binding=>binding.body===body)?.bone.name||(body.mass===0?'ground':'unknown');
+      return {worldPresent:state.world!==null,worldTime:state.world?.time??null,supportSlidePresent:slide!=null,
+        materialPresent:state.material!=null,handMaterialPresent:state.handMaterial!=null,
+        supportSlide:slide?{released:slide.released,releaseAge:slide.releaseAge,hold:slide.hold,tiltRate:slide.tiltRate??null,proof:slide.proof?{...slide.proof}:null}:null,
+        bodyMaterials:state.bindings.map(({bone,body})=>({name:bone.name,material:material(body.material),shapeMaterials:body.shapes.map(shape=>material(shape.material))})),
+        groundMaterials:(state.world?.bodies||[]).filter(body=>body.mass===0).map(body=>({material:material(body.material),shapeMaterials:body.shapes.map(shape=>material(shape.material))})),
+        contactMaterials:(state.world?.contactmaterials||[]).map(contact),defaultContactMaterial:state.world?contact(state.world.defaultContactMaterial):null,
+        contacts:(state.world?.contacts||[]).map(c=>({a:bodyName(c.bi),b:bodyName(c.bj),multiplier:c.multiplier})),
+        waist:waist?{angle:waist.angle,constraintAngle:waist.constraint.angle,coneAngle:waist.constraint.coneEquation.angle,
+          twistAngle:waist.constraint.twistAngle,nativeTwistMax:waist.constraint.twistEquation.maxAngle,nativeTwistEnabled:waist.constraint.twistEquation.enabled,
+          twistLimitMax:waist.limit.max,twistLimitInConstraint:waist.constraint.equations.includes(waist.limit)}:null};
+    };
     const read=()=>{
       const f=window.__freight,p=f?.snapshot?.players.find(p=>p.id===f.localId),group=p&&f.view.players.get(p.id)?.group,d=group?.userData,stats=d?.deathStats,state=d?.deathState;
       if(!p||!d)return null;
-      const currentKey=p.id+'/'+p.deaths,result={key:currentKey,time:f.snapshot.time,renderFrame:f.view.renderer.info.render.frame,alive:p.alive,paused:f.paused,
+      const currentKey=p.id+'/'+p.deaths,result={key:currentKey,time:f.snapshot.time,renderFrame:f.view.renderer.info.render.frame,alive:p.alive,paused:f.paused,supportMaterials:snapshotSupport(state),
         frozen:stats?.frozen===true,phase:stats?.phase||null,stats:stats?structuredClone(stats):null,worldPresent:state?state.world!==null:null,
         resources:state?{bodies:state.bodies.length,bindings:state.bindings.length,joints:state.joints.length,poses:state.poses.length,worldBodies:state.world?.bodies.length||0,worldConstraints:state.world?.constraints.length||0}:null};
       if(currentKey===key&&result.frozen){
@@ -62,19 +84,24 @@ async function fastFrozenPair(key){
       return result;
     };
     const nextFrame=()=>new Promise(resolve=>{let timer,frame;const finish=()=>{clearTimeout(timer);cancelAnimationFrame(frame);resolve();};frame=requestAnimationFrame(finish);timer=setTimeout(finish,100);});
-    const deadline=performance.now()+450;let first=read();
-    while(first?.key===key&&!first.alive&&!first.paused&&!first.frozen&&performance.now()<deadline){await nextFrame();first=read();}
-    if(first?.key!==key||first?.alive||first?.paused||!first?.frozen)return {key,status:'missed',reason:'No frozen local corpse before its natural respawn or bounded observation deadline',first,second:null};
-    await nextFrame();const second=read();return {key,status:'observed',first,second,method:'Two read-only samples across requestAnimationFrame; the live match is never paused.'};
+    const activeSupportSnapshots=[],remember=s=>{if(s?.key===key&&!s.alive&&!s.paused&&!s.frozen&&s.supportMaterials?.worldPresent)activeSupportSnapshots.push(s);return s;};
+    const deadline=performance.now()+450;let first=remember(read());
+    while(first?.key===key&&!first.alive&&!first.paused&&!first.frozen&&performance.now()<deadline){await nextFrame();first=remember(read());}
+    if(first?.key!==key||first?.alive||first?.paused||!first?.frozen)return {key,status:'missed',reason:'No frozen local corpse before its natural respawn or bounded observation deadline',first,second:null,activeSupportSnapshots};
+    await nextFrame();const second=read();return {key,status:'observed',first,second,activeSupportSnapshots,method:'Two read-only samples across requestAnimationFrame; the live match is never paused.'};
   },key);
   report.freezeObservations.push(pair);return pair;
 }
 function verifyFrozenPair(record,pair){
+  for(const active of pair.activeSupportSnapshots||[]){
+    assert.equal(active.key,record.key);inspectSupportEvidence(record,active.stats,active.supportMaterials,{time:active.time,renderFrame:active.renderFrame,method:'fast-freeze active rAF read'});
+  }
   const {first,second}=pair,valid=s=>s?.key===record.key&&!s.alive&&!s.paused&&s.frozen&&s.phase==='frozen';
   if(pair.status!=='observed'||!valid(first)||!valid(second)){pair.stable=false;pair.race=true;return false;}
   assert(Number.isInteger(first.renderFrame)&&Number.isInteger(second.renderFrame)&&second.renderFrame>first.renderFrame,'Frozen samples span different actual renderer frames');
   assert.equal(second.signature,first.signature,'Frozen pose, physics steps and contact passes remain stable across render frames');
   for(const state of [first,second]){
+    inspectSupportEvidence(record,state.stats,state.supportMaterials,{time:state.time,renderFrame:state.renderFrame,method:'fast-freeze frozen rAF read'});
     assert.equal(state.worldPresent,false,'Quick frozen sample confirms the physics world was released');
     assert(state.resources&&Object.values(state.resources).every(value=>value===0),'Quick frozen sample confirms all physics resources were released');
     assert(state.stats.age>=0&&state.stats.age<=2.8+1e-6);assert.equal(state.stats.physicsStepSeconds,thresholds.physicsStepSeconds);
@@ -123,6 +150,26 @@ async function observe(){const sample=await page.evaluate(({alreadyMeasured,know
   const observeStarted=performance.now();
   const f=window.__freight;if(!f?.snapshot)return null;
   const names=['pelvis','spine_0','spine_1','spine_2','spine_3','neck_0','head_0','arm_upper_L','arm_upper_R','arm_lower_L','arm_lower_R','hand_L','hand_R','leg_upper_L','leg_upper_R','leg_lower_L','leg_lower_R','ankle_L','ankle_R'];
+    // Copy primitive values from the real Cannon world; never retain or edit it.
+    const snapshotSupport=state=>{
+      if(!state)return null;
+      const material=m=>m?{id:m.id,name:m.name,friction:m.friction,restitution:m.restitution}:null;
+      const contact=cm=>({materials:cm.materials.map(material),friction:cm.friction,restitution:cm.restitution,
+        normalStiffness:cm.contactEquationStiffness,normalRelaxation:cm.contactEquationRelaxation,
+        frictionStiffness:cm.frictionEquationStiffness,frictionRelaxation:cm.frictionEquationRelaxation});
+      const waist=state.joints.find(joint=>joint.name==='spine_0'),slide=state.supportSlide;
+      const bodyName=body=>state.bindings.find(binding=>binding.body===body)?.bone.name||(body.mass===0?'ground':'unknown');
+      return {worldPresent:state.world!==null,worldTime:state.world?.time??null,supportSlidePresent:slide!=null,
+        materialPresent:state.material!=null,handMaterialPresent:state.handMaterial!=null,
+        supportSlide:slide?{released:slide.released,releaseAge:slide.releaseAge,hold:slide.hold,tiltRate:slide.tiltRate??null,proof:slide.proof?{...slide.proof}:null}:null,
+        bodyMaterials:state.bindings.map(({bone,body})=>({name:bone.name,material:material(body.material),shapeMaterials:body.shapes.map(shape=>material(shape.material))})),
+        groundMaterials:(state.world?.bodies||[]).filter(body=>body.mass===0).map(body=>({material:material(body.material),shapeMaterials:body.shapes.map(shape=>material(shape.material))})),
+        contactMaterials:(state.world?.contactmaterials||[]).map(contact),defaultContactMaterial:state.world?contact(state.world.defaultContactMaterial):null,
+        contacts:(state.world?.contacts||[]).map(c=>({a:bodyName(c.bi),b:bodyName(c.bj),multiplier:c.multiplier})),
+        waist:waist?{angle:waist.angle,constraintAngle:waist.constraint.angle,coneAngle:waist.constraint.coneEquation.angle,
+          twistAngle:waist.constraint.twistAngle,nativeTwistMax:waist.constraint.twistEquation.maxAngle,nativeTwistEnabled:waist.constraint.twistEquation.enabled,
+          twistLimitMax:waist.limit.max,twistLimitInConstraint:waist.constraint.equations.includes(waist.limit)}:null};
+    };
   const world=bone=>bone?[bone.matrixWorld.elements[12],bone.matrixWorld.elements[13],bone.matrixWorld.elements[14]]:null;
   const distance=(a,b)=>a&&b?Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]):null;
   const xyz=value=>[value.x,value.y,value.z],dot=(a,b)=>a.reduce((sum,value,index)=>sum+value*b[index],0),unit=v=>{const length=Math.hypot(...v);return v.map(value=>value/length);};
@@ -148,7 +195,7 @@ async function observe(){const sample=await page.evaluate(({alreadyMeasured,know
     });
     const scales=Object.values(d.bones).flatMap(bone=>bone.scale.toArray());
     const state=d.deathState,death=d.deathStats?structuredClone(d.deathStats):null;
-    const physics=state?{worldPresent:state.world!==null,bodies:state.bodies.length,bindings:state.bindings.length,joints:state.joints.length,poses:state.poses.length,
+    const physics=state?{supportMaterials:snapshotSupport(state),worldPresent:state.world!==null,bodies:state.bodies.length,bindings:state.bindings.length,joints:state.joints.length,poses:state.poses.length,
       worldBodies:state.world?.bodies.length||0,worldConstraints:state.world?.constraints.length||0,worldDt:state.world?.dt??null,worldAllowSleep:state.world?.allowSleep??null,solverIterations:state.world?.solver.iterations??null,bodyAllowSleep:state.bodies.map(body=>body.allowSleep),
       bodiesMeasured:state.bindings.map(({bone,body,offset})=>({name:bone.name,position:[body.position.x,body.position.y,body.position.z],rotation:[body.quaternion.x,body.quaternion.y,body.quaternion.z,body.quaternion.w],
         velocity:[body.velocity.x,body.velocity.y,body.velocity.z],angularVelocity:[body.angularVelocity.x,body.angularVelocity.y,body.angularVelocity.z],offset:offset.toArray(),
@@ -236,6 +283,84 @@ async function quietPerformance(){
   report.heavySnapshotAfterQuiet=await observe();await shot('quiet-performance-final');
 }
 
+
+// The proof is a scalar description of the triggering prior contacts. Live
+// materials and equations below independently establish the actual world state.
+function validateSupportProof(d){
+  assert.equal(typeof d.supportedClothSlip,'boolean','Support-release flag is explicit');
+  if(!d.supportedClothSlip){assert.equal(d.supportReleaseAge,null);assert.equal(d.supportReleaseProof,null);return null;}
+  const p=d.supportReleaseProof,keys=['age','sustainedSeconds','torsoRatio','tiltRate','armGroundLoad','sleeveChestLoad','hipSpeed','chestSpeed','hipAngularSpeed','chestAngularSpeed','waistSwingDegrees','gloveDeckFriction','selfFriction'];
+  assert(p&&typeof p==='object'&&!Array.isArray(p),'Support release retains scalar contact evidence');
+  assert.deepEqual(Object.keys(p).sort(),keys.sort(),'Trigger evidence contains only the locked numeric fields');
+  assert(Object.values(p).every(Number.isFinite),'Trigger proof does not retain bodies, contacts or other references');
+  assert(p.age>1&&p.age<=d.age+1e-6&&p.age<=2.8+1e-6,'Support only releases during the late finite physical fall');
+  assert(Math.abs(d.supportReleaseAge-p.age)<1e-12,'Release age matches trigger evidence');
+  assert(p.sustainedSeconds>=.02&&p.sustainedSeconds<=.02+thresholds.physicsStepSeconds+1e-9,'Loaded support persists for the actual substep hold window');
+  assert(p.torsoRatio>.6&&p.torsoRatio<=1+1e-6&&Math.abs(p.tiltRate)<.2,'Trigger describes a slowly changing elevated torso');
+  assert(p.armGroundLoad>5&&p.sleeveChestLoad>5,'Trigger describes a loaded arm-ground and forearm-chest brace, permitting opposite sides');
+  assert(p.hipSpeed>=0&&p.hipSpeed<.6&&p.chestSpeed>=0&&p.chestSpeed<.6&&p.hipAngularSpeed>=0&&p.hipAngularSpeed<1.5&&p.chestAngularSpeed>=0&&p.chestAngularSpeed<1.5,'Trigger retains bounded actual core motion');
+  assert.equal(p.waistSwingDegrees,60);assert.equal(p.gloveDeckFriction,0);assert.equal(p.selfFriction,0);return p;
+}
+function inspectSupportEvidence(record,d,evidence,observedAt){
+  assert(evidence,'Read support materials from the actual death state');
+  const history=record.supportMaterialEvidence||={activeSamples:0,ordinarySamples:0,releasedSamples:0,frozenSamples:0,triggerObservation:'not-triggered'};
+  const reading={...observedAt,stats:structuredClone(d),world:structuredClone(evidence)};
+  // Preserve the raw values before assertions so a failure can be reconstructed.
+  record.lastSupportReading=reading;
+  const proof=validateSupportProof(d);
+  if(history.firstReleased)assert.equal(d.supportedClothSlip,true,'An observed release never reverts before respawn');
+  if(d.frozen){
+    assert.equal(evidence.worldPresent,false);assert.equal(evidence.supportSlidePresent,false,'Freeze clears support state and all its body references');
+    assert.equal(evidence.supportSlide,null);assert.equal(evidence.materialPresent,false);assert.equal(evidence.handMaterialPresent,false);
+    assert.equal(evidence.defaultContactMaterial,null);assert.equal(evidence.waist,null);
+    for(const key of ['bodyMaterials','groundMaterials','contactMaterials','contacts'])assert.deepEqual(evidence[key],[],'Freeze clears real '+key);
+    history.frozenSamples++;
+    if(proof){
+      history.triggered=true;history.triggerProof=structuredClone(proof);
+      if(history.firstReleased)assert.deepEqual(proof,history.firstReleased.stats.supportReleaseProof,'Frozen trigger evidence matches the measured released world');
+      history.triggerObservation=history.firstReleased?'observed-live-world':'unobserved-active-state';
+    }
+    return;
+  }
+  assert.equal(evidence.worldPresent,true);assert.equal(evidence.materialPresent,true);assert.equal(evidence.handMaterialPresent,true);
+  assert(Number.isFinite(evidence.worldTime)&&evidence.worldTime>=0&&Math.abs(evidence.worldTime-d.physicsSteps*thresholds.physicsStepSeconds)<1e-6,'Material read belongs to the actual stepped world');
+  const slide=evidence.supportSlide;
+  if(proof){
+    assert.equal(evidence.supportSlidePresent,true);assert.equal(slide.released,true);assert.equal(slide.releaseAge,d.supportReleaseAge);assert.deepEqual(slide.proof,proof);
+    assert(proof.age<=evidence.worldTime+1e-6,'Measured live world is not earlier than the claimed release');
+  }else if(slide){assert.equal(slide.released,false);assert.equal(slide.releaseAge,null);assert.equal(slide.proof,null);}
+  const ids=new Map(),assertMaterial=(m,name)=>{
+    assert(m&&m.name===name&&Number.isInteger(m.id),'Read the correct real body/contact material');
+    assert.equal(m.friction,-1,'Per-material friction does not override the measured contact pair');assert.equal(m.restitution,-1);
+    if(ids.has(name))assert.equal(m.id,ids.get(name),'All bodies and contact pairs share the actual '+name+' material');else ids.set(name,m.id);
+  };
+  assert.equal(evidence.bodyMaterials.length,15);
+  for(const body of evidence.bodyMaterials){assertMaterial(body.material,/^hand_[LR]$/.test(body.name)?'glove':'corpse');assert(body.shapeMaterials.length>0&&body.shapeMaterials.every(m=>m===null),'Shapes do not override actual body materials');}
+  assert.equal(evidence.groundMaterials.length,1);assertMaterial(evidence.groundMaterials[0].material,'deck');assert.deepEqual(evidence.groundMaterials[0].shapeMaterials,[null]);
+  assert.equal(ids.size,3);assert.equal(new Set(ids.values()).size,3,'Corpse, glove and deck materials are distinct');
+  const expectedPairs={'corpse|corpse':proof?0:.08,'corpse|glove':proof?0:.08,'glove|glove':proof?0:.08,'corpse|deck':.15,'deck|glove':proof?0:.03},seen=new Set();
+  assert.equal(evidence.contactMaterials.length,5);
+  const validateNormal=(cm,deck)=>{
+    assert.equal(cm.restitution,0);assert.equal(cm.normalStiffness,deck?2e7:5e4);assert.equal(cm.normalRelaxation,deck?12:8);
+    assert.equal(cm.frictionStiffness,deck?2e7:5e4);assert.equal(cm.frictionRelaxation,deck?4:8);
+  };
+  for(const cm of evidence.contactMaterials){
+    assert.equal(cm.materials.length,2);for(const m of cm.materials){assert(ids.has(m.name));assertMaterial(m,m.name);}
+    const pair=cm.materials.map(m=>m.name).sort().join('|');assert(Object.hasOwn(expectedPairs,pair)&&!seen.has(pair),'Read each locked actual material pair exactly once');seen.add(pair);
+    assert.equal(cm.friction,expectedPairs[pair],'Actual '+pair+' friction matches the measured release state');validateNormal(cm,pair.includes('deck'));
+  }
+  const defaults=evidence.defaultContactMaterial;assert(defaults);assert.equal(defaults.friction,.15);validateNormal(defaults,true);
+  const waist=evidence.waist,angle=(proof?60:45)*Math.PI/180,twist=25*Math.PI/180;
+  assert(waist,'Read the actual waist constraint');
+  for(const key of ['angle','constraintAngle','coneAngle'])assert(Math.abs(waist[key]-angle)<1e-12,'Actual waist '+key+' matches the measured release state');
+  for(const key of ['twistAngle','twistLimitMax'])assert(Math.abs(waist[key]-twist)<1e-12,'Waist twist remains at 25 degrees');
+  if(d.physicsSteps>0)assert(Math.abs(waist.nativeTwistMax-twist)<1e-12);
+  assert.equal(waist.nativeTwistEnabled,false);assert.equal(waist.twistLimitInConstraint,true,'The anatomical twist equation remains part of the actual constraint');
+  history.activeSamples++;history.latestActive=reading;record.lastMeasuredMaterials=reading;
+  if(proof){history.releasedSamples++;history.firstReleased||=reading;history.triggered=true;history.triggerProof=structuredClone(proof);history.triggerObservation='observed-live-world';}
+  else {history.ordinarySamples++;history.firstOrdinary||=reading;}
+}
+
 function validateAnatomy(actor){
   assert.equal(actor.missing,undefined,actor.id+': model exists');
   assert(Number.isFinite(actor.scaleMin)&&Number.isFinite(actor.scaleMax)&&actor.scaleMin>thresholds.scaleMin&&actor.scaleMax<thresholds.scaleMax,actor.id+': bone scales remain full size');
@@ -265,6 +390,7 @@ function inspectDeath(actor,sample){
   // Preserve the full true pose before any anatomical assertion can fail. This
   // is diagnostic evidence for a separate scene, never a write to the match.
   if(actor.skinBounds){record.frozenPose={bones:actor.allBones,skinBounds:actor.skinBounds,footGeometry:actor.footGeometry,headPelvis:actor.headPelvis,torsoVerticalRatio:actor.torsoVerticalRatio,headAnkles:actor.headAnkles,legSpans:actor.legSpans,physics:actor.physics,death:actor.death};}
+  inspectSupportEvidence(record,d,physics.supportMaterials,{time:sample.time,method:'full read-only actor observation'});
   if(!d.frozen){
     assert.equal(physics.worldPresent,true);assert.equal(physics.bodies,15);assert.equal(physics.bindings,15);assert.equal(physics.joints,14);
     if(d.physicsSteps>0)assert(Math.abs(physics.worldDt-d.physicsStepSeconds)<1e-12,'Actual Cannon world dt matches reported fixed step after a physical step');
@@ -401,6 +527,11 @@ try{
   const complete=[...deathRecords.values()].filter(record=>record.frozen&&record.stableSamples>0&&record.respawned&&record.skinBounds),locals=complete.filter(record=>record.local&&record.cameraVerified&&record.cameraScreenshot&&record.respawnScreenshot);
   check('At least two natural deaths freeze, release physics and respawn',complete.length>=2,{completeDeaths:complete.map(record=>record.key),observedDeaths:deathRecords.size});
   check('Two actual player cameras show physical falls followed by verified freeze and natural respawn',locals.length>=2,{localDeaths:locals.map(record=>({key:record.key,cameraScreenshot:record.cameraScreenshot,frozenStableSamples:record.stableSamples,frozenScreenshot:record.frozenScreenshot||null,respawnScreenshot:record.respawnScreenshot}))});
+  const supportEvidence=[...deathRecords.values()].map(record=>({key:record.key,...record.supportMaterialEvidence}));
+  report.supportMaterialSummary={activeSamples:supportEvidence.reduce((sum,item)=>sum+item.activeSamples,0),releasedSamples:supportEvidence.reduce((sum,item)=>sum+item.releasedSamples,0),
+    triggered:supportEvidence.filter(item=>item.triggered).map(item=>({key:item.key,observation:item.triggerObservation,proof:item.triggerProof})),
+    unobservedActiveTriggers:supportEvidence.filter(item=>item.triggerObservation==='unobserved-active-state').map(item=>item.key)};
+  check('Observed live Cannon materials and waist equations match their measured support state',report.supportMaterialSummary.activeSamples>0,report.supportMaterialSummary);
   report.cost={peakActiveWorlds,peakBodies,peakConstraints,peakFrozenCorpses,playerCount:size*2};
   check('Observed physics resources remain bounded and frozen worlds are released',true,report.cost);await shot('04-match-final');
   check('No public runtime or asset request errors',!report.errors.length&&!report.failedRequests.length,{errors:report.errors,failedRequests:report.failedRequests,playMs:report.playMs});report.ok=true;
