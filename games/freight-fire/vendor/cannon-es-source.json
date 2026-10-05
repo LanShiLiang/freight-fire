@@ -1,0 +1,19 @@
+{
+  "name": "cannon-es",
+  "version": "0.20.0",
+  "license": "MIT",
+  "upstream": "https://github.com/pmndrs/cannon-es",
+  "package": "https://registry.npmjs.org/cannon-es/-/cannon-es-0.20.0.tgz",
+  "packageIntegrity": "sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA==",
+  "packageSha256": "8bb8590fb142095d506d5a5fe13b0331430d05363eff8b6e33fac83c9dd14a84",
+  "module": {
+    "path": "cannon-es.js",
+    "bytes": 346256,
+    "sha256": "f0700cbd3a482954949b9d58c1b0f76dcc74767750297647a39d8c40dd63d37c"
+  },
+  "notice": {
+    "path": "cannon-es-LICENSE",
+    "sha256": "4714d0272f50cb21fe46fe29333c7c600d3c85b5ebd2a80f4db07e8cfccbf5b2"
+  },
+  "processing": "Official npm package integrity verified; dist/cannon-es.js and LICENSE copied unchanged. No lifecycle scripts executed."
+}

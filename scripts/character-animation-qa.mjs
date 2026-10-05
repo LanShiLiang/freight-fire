@@ -10,6 +10,7 @@ import {root} from './catalog.mjs';
 // deterministic animation scenes. The final match uses ordinary UI and keys;
 // its actors, health and animation state are only observed, never overwritten.
 const baseline=process.argv.includes('--baseline');
+const deathsOnly=process.argv.includes('--deaths-only');
 const baselineSource=process.argv.find(argument=>argument.startsWith('--baseline-source='))?.slice('--baseline-source='.length);
 const characterSource=await readFile(path.resolve(root,baseline&&baselineSource?baselineSource:'games/freight-fire/character-v2.js'),'utf8');
 const out=path.join(root,'artifacts',baseline?'character-animation-baseline':'character-animation');
@@ -45,7 +46,7 @@ try{
   window.__animationDiagnostic={T,...characters,...weapons,renderer,scene,camera,sample};
  });
  await page.evaluate(value=>__animationDiagnostic.baseline=value,baseline);
- for(const team of [0,1])for(const weapon of [0,1,2,3,4])for(const moving of [false,true]){
+ if(!deathsOnly)for(const team of [0,1])for(const weapon of [0,1,2,3,4])for(const moving of [false,true]){
   const result=await page.evaluate(({team,weapon,moving})=>{
    const q=__animationDiagnostic;if(q.actor){q.scene.remove(q.actor);q.disposeCharacterV2(q.actor);}q.actor=q.makeCharacterV2(team,q.makeWeaponV2);q.scene.add(q.actor);
    const state={alive:true,grounded:true,x:0,y:0,z:0,yaw:0,pitch:0,weapon,vx:0,vz:moving?-3:0,walking:moving};
@@ -60,26 +61,47 @@ try{
   const reload=await page.evaluate(weapon=>{const q=__animationDiagnostic;q.characterEvent(q.actor,{type:'reload',weapon,time:2,until:4},2);const frames=[];for(let i=0;i<150;i++){q.updateCharacterV2(q.actor,{alive:true,grounded:true,weapon,pitch:0},1/60,2+i/60);if(i%15===0)frames.push(q.sample(q.actor));}return frames;},weapon);
   check('Reload retains body geometry '+team+'/'+weapon, reload.every(frame=>frame.finite&&frame.scaleMin>.9&&frame.headHipDistance>.45),reload.filter(frame=>!frame.finite||frame.scaleMin<=.9||frame.headHipDistance<=.45));
  }
- for(const team of [0,1])for(const crouching of [false,true])for(const fired of [false,true])for(const direction of ['back','left','right']){
-  const result=await page.evaluate(({team,crouching,fired,direction})=>{
+ const deathCases=[];
+ for(const team of [0,1]){
+  for(const crouching of [false,true])for(const fired of [false,true])for(const direction of ['back','left','right'])deathCases.push({team,crouching,fired,direction,weapon:0,heavy:false});
+  for(const [weapon,heavy]of [[3,false],[2,false],[4,false],[4,true]])for(const direction of ['back','left'])deathCases.push({team,crouching:false,fired:true,direction,weapon,heavy});
+ }
+ for(const fixture of deathCases){
+  const {team,crouching,fired,direction,weapon,heavy}=fixture;
+  const result=await page.evaluate(({team,crouching,fired,direction,weapon,heavy})=>{
    const q=__animationDiagnostic;q.scene.remove(q.actor);q.disposeCharacterV2(q.actor);q.actor=q.makeCharacterV2(team,q.makeWeaponV2);q.scene.add(q.actor);
    const yaw=(team?-.63:.47)+(crouching?.19:0)+(fired?-.11:.08);q.actor.rotation.y=yaw;
-   const state={alive:true,grounded:true,x:0,y:0,z:0,yaw,weapon:0,pitch:0,crouching};
-   for(let i=0;i<40;i++)q.updateCharacterV2(q.actor,state,1/60,i/60);if(fired){q.characterEvent(q.actor,{type:'shot',weapon:0},1);q.updateCharacterV2(q.actor,state,1/60,1);}
+   const state={alive:true,grounded:true,x:0,y:0,z:0,yaw,weapon,pitch:0,crouching};
+   for(let i=0;i<40;i++)q.updateCharacterV2(q.actor,state,1/60,i/60);if(fired){q.characterEvent(q.actor,{type:weapon===4?'melee':'shot',weapon,heavy},1);q.updateCharacterV2(q.actor,state,1/60,1);}
    const localImpulse=new q.T.Vector3(...({back:[0,0,1],left:[-1,0,0],right:[1,0,0]}[direction]));q.actor.userData.deathDirection=localImpulse.applyQuaternion(q.actor.quaternion);q.deathDirection=direction;
-   q.deathAge=0;q.deathState={...state,id:'diagnostic-'+team+'-'+Number(crouching)+'-'+Number(fired),deathAt:1,alive:false};return {team,crouching,fired,direction,yaw,worldImpulse:q.actor.userData.deathDirection.toArray(),initial:q.sample(q.actor)};
-  },{team,crouching,fired,direction});result.frames=[];
-  for(const age of [.05,.2,.45,.75,1.2,1.8,2.5,3.5]){
-   const frame=await page.evaluate(age=>{const q=__animationDiagnostic;while(q.deathAge<age-1e-6){q.updateCharacterV2(q.actor,q.deathState,1/120,1+q.deathAge);q.deathAge+=1/120;}q.camera.position.set(2.9,3.3,4.8).applyAxisAngle(new q.T.Vector3(0,1,0),q.actor.rotation.y);q.camera.lookAt(0,.35,0);document.querySelector('#caption').textContent=(q.actor.userData.team?'潜伏者':'保卫者')+' · '+({back:'后倒',left:'左侧倒',right:'右侧倒'}[q.deathDirection])+' '+age.toFixed(2)+' 秒\n'+(q.baseline?'修复前的倒地动作':'分阶段倒地 · 无横向碰撞 · '+(q.actor.userData.deathStats?.phase||''));q.renderer.render(q.scene,q.camera);return {age,...q.sample(q.actor)};},age);
-   result.frames.push(frame);if([.45,1.2,2.5].includes(age))await shot('death-'+team+'-'+Number(crouching)+'-'+Number(fired)+'-'+direction+'-'+age);
+   q.deathAge=0;q.deathState={...state,id:'diagnostic-'+team+'-'+Number(crouching)+'-'+Number(fired),deathAt:1,alive:false};const initial=q.sample(q.actor);q.updateCharacterV2(q.actor,q.deathState,0,1);return {team,crouching,fired,direction,weapon,heavy,yaw,worldImpulse:q.actor.userData.deathDirection.toArray(),initial,handoff:q.sample(q.actor)};
+  },fixture);result.frames=[];
+  for(const age of [.05,.2,.45,.75,1.2,1.8,2.8,3.5]){
+   const frame=await page.evaluate(age=>{const q=__animationDiagnostic;while(q.deathAge<age-1e-6){q.updateCharacterV2(q.actor,q.deathState,1/120,1+q.deathAge);q.deathAge+=1/120;}const centre=q.actor.userData.bones.pelvis.getWorldPosition(new q.T.Vector3()).add(q.actor.userData.bones.head_0.getWorldPosition(new q.T.Vector3())).multiplyScalar(.5);q.camera.position.set(2.9,3.3,4.8).applyAxisAngle(new q.T.Vector3(0,1,0),q.actor.rotation.y).add(new q.T.Vector3(centre.x,0,centre.z));q.camera.lookAt(centre.x,.35,centre.z);document.querySelector('#caption').textContent=(q.actor.userData.team?'潜伏者':'保卫者')+' · '+({back:'后方受击',left:'左侧受击',right:'右侧受击'}[q.deathDirection])+' '+age.toFixed(2)+' 秒\n'+(q.baseline?'修复前的倒地动作':'真实布娃娃 · 独立地面与自身关节 · '+(q.actor.userData.deathStats?.phase||''));q.renderer.render(q.scene,q.camera);return {age,resources:{world:q.actor.userData.deathState?.world!==null,bodies:q.actor.userData.deathState?.bodies.length,joints:q.actor.userData.deathState?.joints.length},...q.sample(q.actor)};},age);
+   result.frames.push(frame);if([.45,1.2,2.8].includes(age))await shot('death-'+team+'-'+Number(crouching)+'-'+Number(fired)+'-'+weapon+'-'+Number(heavy)+'-'+direction+'-'+age);
   }
   const final=result.frames.at(-1),flat=Math.max(final.bounds.size[0],final.bounds.size[2]);
-  const label=team+'/'+Number(crouching)+'/'+Number(fired)+'/'+direction;
-  check('Corpse remains extended and supported '+label,result.frames.every(frame=>frame.finite)&&final.scaleMin>.9&&final.scaleMax<1.1&&flat>1.35&&final.axisExtent>1.65&&final.bounds.size[1]<.65&&final.headHipDistance>.69&&final.headAnkles.every(value=>value>1.6)&&final.headHands.every(value=>value>.7)&&final.bounds.min[1]>=-.012&&final.bounds.min[1]<.045,{final,flat});
-  check('Death direction and stage diagnostics match '+label,final.death?.clip==='staged-fall'&&final.death.fallDirection===direction&&[0,1,2].includes(final.death.variation)&&final.death.phase==='frozen'&&final.death.frozen&&final.death.once&&final.death.horizontalContacts===false&&final.death.collisionMode==='ground-only'&&final.death.age>=1.2&&final.death.age<=1.4,final.death);
-  const stable=result.frames.slice(-2);check('Settled corpse freezes without further contact work '+label,JSON.stringify(stable[0].bounds)===JSON.stringify(stable[1].bounds)&&stable[0].death?.contactPasses===stable[1].death?.contactPasses,stable);
+  const label=team+'/'+Number(crouching)+'/'+Number(fired)+'/'+weapon+'/'+Number(heavy)+'/'+direction;
+  check('Displayed live pose hands off continuously '+label,new Float64Array(result.initial.pelvis).every((value,index)=>Math.abs(value-result.handoff.pelvis[index])<.001)&&Math.abs(result.initial.headHipDistance-result.handoff.headHipDistance)<.001,{initial:result.initial,handoff:result.handoff});
+  // A physically bent knee is valid: reject a compressed torso/limb pile by
+  // true geometry and joint limits rather than demanding the old straight pose.
+  check('Physical corpse remains unfolded and supported '+label,result.frames.every(frame=>frame.finite&&frame.headHipDistance>.60)&&final.scaleMin>.99&&final.scaleMax<1.01&&flat>1.2&&final.bounds.size[1]<1.05&&final.headAnkles.every(value=>value>.9)&&final.bounds.min[1]>=-.055&&final.bounds.min[1]<.09,{final,flat});
+  check('True physics and limited joints settle '+label,final.death?.clip==='ragdoll'&&final.death.engine==='cannon-es'&&final.death.rigidBodies===15&&final.death.constraints===14&&final.death.phase==='frozen'&&final.death.frozen&&final.death.once&&final.death.horizontalContacts===false&&final.death.collisionMode==='ground-only'&&final.death.age<=2.8&&final.death.maxJointGap<.03&&final.death.maxBendViolation<.06&&final.death.maxTwistViolation<.06&&final.death.maxSwingViolation<.06,final.death);
+  const stable=result.frames.slice(-2);check('Settled corpse frees all bodies and freezes without further physics '+label,JSON.stringify(stable[0].bounds)===JSON.stringify(stable[1].bounds)&&stable[0].death?.physicsSteps===stable[1].death?.physicsSteps&&stable[0].death?.contactPasses===stable[1].death?.contactPasses&&stable.every(frame=>!frame.resources.world&&frame.resources.bodies===0&&frame.resources.joints===0),stable);
   const reset=await page.evaluate(()=>{const q=__animationDiagnostic;for(let i=0;i<40;i++)q.updateCharacterV2(q.actor,{alive:true,grounded:true,weapon:0,yaw:q.actor.rotation.y},1/60,5+i/60);return {dead:q.actor.userData.dead,deathState:q.actor.userData.deathState===null,upperMode:q.actor.userData.upperMode,upperUntil:q.actor.userData.upperUntil,visual:q.actor.userData.visual.position.toArray(),rotation:q.actor.userData.visual.rotation.toArray(),...q.sample(q.actor)};});
   check('Respawn restores normal body and clears death state '+label,!reset.dead&&reset.deathState&&reset.death===null&&reset.upperMode===null&&reset.upperUntil===0&&reset.visual.every(value=>value===0)&&reset.bounds.size[1]>1.6&&reset.headHipDistance>.5&&reset.scaleMin>.9,reset);report.deaths.push(result);
+ }
+ if(!baseline){
+  report.physicsCost=await page.evaluate(()=>{
+   const q=__animationDiagnostic,results=[];
+   for(const count of [8,16]){
+    const actors=[];for(let i=0;i<count;i++){const actor=q.makeCharacterV2(i%2,q.makeWeaponV2);actor.position.set(i%4*3,0,Math.floor(i/4)*3);actor.rotation.y=i*.37;const alive={alive:true,weapon:0,grounded:true,pitch:0};for(let frame=0;frame<40;frame++)q.updateCharacterV2(actor,alive,1/60,frame/60);actor.userData.deathDirection=new q.T.Vector3(Math.sin(i*.63),0,Math.cos(i*.63));actors.push({actor,dead:{...alive,alive:false,x:0,y:0,z:0}});}
+    const initialize=performance.now();for(const {actor,dead}of actors)q.updateCharacterV2(actor,dead,0,1);const initializationMs=performance.now()-initialize,times=[];
+    for(let frame=0;frame<180;frame++){const start=performance.now();for(const {actor,dead}of actors)q.updateCharacterV2(actor,dead,1/60,1+frame/60);times.push(performance.now()-start);}
+    const steps=actors.map(({actor})=>actor.userData.deathStats.physicsSteps),frozenStart=performance.now();for(let frame=0;frame<120;frame++)for(const {actor,dead}of actors)q.updateCharacterV2(actor,dead,1/60,4+frame/60);const frozenMs=performance.now()-frozenStart;
+    const released=actors.every(({actor},index)=>actor.userData.deathState.world===null&&actor.userData.deathStats.physicsSteps===steps[index]);times.sort((a,b)=>a-b);results.push({count,initializationMs,medianFrameMs:times[Math.floor(times.length*.5)],p95FrameMs:times[Math.floor(times.length*.95)],maxFrameMs:times.at(-1),frozen120FramesMs:frozenMs,released});for(const {actor}of actors)q.disposeCharacterV2(actor);
+   }return results;
+  });check('Eight and sixteen corpses release simulations before respawn',report.physicsCost.every(result=>result.released),report.physicsCost);
  }
  if(!baseline){
   await page.goto(`http://127.0.0.1:${server.address().port}/games/freight-fire/?qa=1`);await page.locator('#loading').waitFor({state:'hidden',timeout:60000});await page.locator('#difficulty').selectOption('easy');await page.locator('#start').click();await page.waitForFunction(()=>__freight.snapshot?.players.find(p=>p.id===__freight.localId)?.alive&&!__freight.paused);

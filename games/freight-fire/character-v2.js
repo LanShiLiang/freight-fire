@@ -162,7 +162,7 @@ function updateGun(group,p,dt,time) {
   }
 }
 
-/** Caller owns living position/yaw. The relaxed fall holds its pose until respawn. */
+/** Caller owns living position/yaw. Physics owns the corpse until respawn. */
 export function updateCharacterV2(group,p,dt=1/60,time) {
   const d=group.userData;if(!d.characterV2)return;dt=clamp(Number(dt)||0,0,.1);d.elapsed+=dt;time=Number.isFinite(time)?time:d.elapsed;
   if(p.alive===false) {
@@ -170,6 +170,7 @@ export function updateCharacterV2(group,p,dt=1/60,time) {
     advanceCharacterDeath(group,dt);return;
   }
   if(d.dead){d.dead=false;clearCharacterDeath(group);d.raisedWeight=0;d.raisedUntil=0;d.visual.position.set(0,0,0);d.visual.rotation.set(0,0,0);for(const a of Object.values(d.actions))a.stop();d.currentAction='';d.rawPose.clear();for(const [bone,r]of d.rest){bone.position.copy(r.position);bone.quaternion.copy(r.quaternion);bone.scale.copy(r.scale);}}
+  d.lastLivingVelocity=[p.vx||0,p.vy||0,p.vz||0];
   restoreRawPose(d);
   d.visual.visible=true;const wanted=locomotion(p);playBase(d,wanted);
   const speed=Math.hypot(p.vx||0,p.vz||0),moving=speed>.25;

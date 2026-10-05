@@ -1,5 +1,75 @@
-# Transport Ship module
+# 运输船 / Transport Ship
 
-Standalone instructions, controls, validation and LAN hosting: [project README](../../README.md).
+经典端游运输船的网页 FPS 练习作品，支持保卫者 / 潜伏者、4v4 / 8v8 人机与局域网对战。保留已认可的经典地图结构和绘制材质，本轮重构人物、配套枪手、死亡视角与战斗界面。与官方游戏无关联。
 
-Current model/audio/map notices are retained beside each asset family and at [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md).
+## 当前素材与效果
+
+直接复用用户指定的 [ETO-ze/dust2-web](https://github.com/ETO-ze/dust2-web) 所公开提供的 CS2 资源：M4A1-S、AK-47、AWP、USP-S、蓝宝石爪子刀，两队 SAS / Phoenix 人物与统一手臂、匹配骨骼动画、武器与击杀图标、原始音效。全部资源在本地提供，运行时无需连接资源镜像。下载逐文件核验大小和 SHA-256。
+
+- 枪体挂在原始 `wpn` 骨骼，手指、握持、拔枪、开火、换弹、拉栓和刀的轻重攻击沿用配套动作；第一人称不再拼接不同作者的手模和枪体，也不再使用手部 IK 修补握持。
+- 当前 AK-47 使用社区「火神 / Vulcan」（jim´s），M4A1-S 使用「印花集 / Printstream」（JTPNZ），完整原装材质与匹配模型直接复用。顶点、UV、骨架、蒙皮及逆绑定矩阵与原同型号模型实际字节相同，记录见 `assets/viewmodel-cs2/skin-selection-community.json`。没有重新绘制枪身贴图。
+- 两队第一人称手套和袖口保留专属「港湾警戒」原创颜色贴图，原分辨率、法线、粗糙度、骨架与动作不变。四张源贴图、可复现配方与校验记录位于 `assets/viewmodel-cs2/original/` 和 `original-skins.json`；「船坞黑钢」AK 派生模型仅保留为历史复现与字节校验资料，当前不加载。
+- AWP 非开镜镜片使用独立静态玻璃材质。右键依次进入第一档、第二档、退出；开镜隐藏整套枪手，采用圆形遮罩、细十字线和两级视角。开火退镜并在拉栓结束后恢复；切枪、换弹、死亡清除镜状态。
+- 两队人物使用原始移动、蹲下、跳跃和不同武器姿态。步枪与手枪射击按素材原本的增量叠加，保持完整骨长与比例。死亡从当前蒙皮姿态、移动速度和受击方向进入 cannon-es 物理布娃娃；骨盆、胸、头和双侧四肢共 15 个代理刚体，关节限制防止肢体反折，重力驱动松落和地面接触。每具尸体与本地水平地面接触，并保留部分非相邻肢体对躯干的自身接触，防止腿缩进身体；不与墙、玩家或其他尸体碰撞，墙边允许轻微穿模。静止后冻结，最迟 2.8 秒释放物理世界并保留当时姿态，3 秒重生恢复完整动作。死亡镜头从第一人称倒下，再平滑退到尸体附近并跟随真实尸体。
+- 枪械具有各自的后坐力、恢复速度与原版枪声，换弹和拉栓播放对应音效。击杀、爆头命中使用 CS2 原始样本；右上角展示阵营色姓名、武器图标、爆头图标，本人相关记录有边框。
+- 音效默认开启，首次点击开始对战解锁浏览器音频；首页没有声音开启开关或耳机提示。
+
+资源锁和处理记录位于 `assets/viewmodel-cs2/`、`assets/characters-cs2/`、`assets/audio/cs2/`。本作品的适配与游戏逻辑独立编写；公开资源保留 Valve 和创作者原有权利，未将其重新标为本项目的 MIT 代码。
+
+## 开始游戏与操作
+
+从 AI Game Lab 大厅选择“运输船”，或访问 `/games/freight-fire/`。推荐 Windows Chrome / Edge，开启浏览器硬件加速。执行 `npm run dev`，打开显示的本地地址；由于 ES modules 限制，不建议直接双击 HTML。
+
+| 操作 | 按键 |
+| --- | --- |
+| 移动 / 跳跃 / 蹲下 | WASD / 空格 / Ctrl |
+| 静步 | 按住 Shift，移动减速且无脚步声 |
+| 主武器选择 | 在己方出生舱按 B，选择 M4A1-S / AK-47 / AWP |
+| 装备槽 | 1 当前主武器、2 USP-S、3 刀；滚轮按三个装备槽切换 |
+| 开火 / 刀轻击 | 左键；刀每次 50 伤害，两次击败满血敌人 |
+| 瞄准 / 刀重刺 | 右键；AWP 两级开镜，刀每次 100 伤害，一次击败满血敌人 |
+| 换弹 / 战绩 / 菜单 | R / Tab / Esc |
+
+离开出生舱后 B 不可换主武器，死亡后保留已选主武器。数字 4 不会切换到另一把主武器。刀有拔刀、交替轻击和重刺动画、距离和角度限制；墙体遮挡、队友免伤及出生保护仍生效。刀不显示弹药数。不能锁定鼠标时可左键拖动转向、F 射击；触屏提供双摇杆与射击、瞄准、换弹、跳跃、装备槽、出生点选枪按钮。
+
+队友免伤，出生后 2 秒保护，阵亡后 3 秒自动复活。4v4 / 8v8，目标 20 / 40 / 80 分；5 分钟到时比分高的一方获胜。Esc 在人机局暂停，在联机局打开菜单但服务器继续运行。
+
+## 保留的地图
+
+结构来自 [2014 年公开分享的经典运输船转换地图](https://gamebanana.com/mods/111054)：原地图 SmileGate，转换 Riding crab snails，编译与截图 ElysiumLeoSK。数值面片、凸体碰撞、出生坐标采用统一变换，双方出生舱各保留左右出口、地下侧路、箱阶高台与非对称中路箱体。来源、哈希和变换见 `assets/maps/classic-source.json`。
+
+已认可的结构与碰撞保持，材质在原面 UV 上绘制箱门锁杆、波纹侧板、帆布绑带、木纹箱架、甲板接缝和铆钉，结合 Poly Haven CC0 摄影材质。没有随作品提供原 CF 贴图或商标。原引擎绝对单位未独立验证；不声称所有细节与原版一比一。派生地图保留原权利。
+
+Shift 依照 [CrossFire 官方操作说明](https://crossfire.z8games.com/guides_controls.html) 作为静步，已取消冲刺加速、动画和扩张视角。速度按本地图尺度调校，官网未提供可独立核验的绝对速度，当前不声称数值一比一。
+
+## Windows 局域网开服
+
+1. 安装官方 [Node.js](https://nodejs.org/) 20 或更高版本。
+2. 解压完整源码包，双击根目录 `start-fps-lan.cmd`。缺少依赖时仅执行锁定版本的 `npm ci --omit=dev --ignore-scripts`，首次安装需要网络。
+3. 开服电脑打开窗口显示的本机地址，选择“局域网好友”，创建 4v4 / 8v8 房间。
+4. 菜单点击“复制好友邀请”，自行发给同一局域网的朋友。朋友从链接或邀请码加入。
+5. 空位自动补 AI，真人加入替换 AI；断线由 AI 接管，房主断线后移交现有真人。房主可重开，关闭开服窗口 / Ctrl+C 停服。
+
+默认 `0.0.0.0:8787`。自定义端口：`start-fps-lan.cmd --port 8788`；仅本机：`--host 127.0.0.1`。不修改防火墙或做公网映射。无剪贴板 API 时提供可选中的邀请文字；多网卡时可选择开服窗口显示的私有地址。没有公网匹配、持久账号、NAT 穿透或专业反作弊。
+
+## 架构与验证
+
+`sim.js` 在浏览器和 LAN Node 服务复用，60Hz 固定步长；移动、射线遮挡、伤害、出生点选枪和计分由同一模拟判定。AI 使用带玩家净空的 A* 与视线/反应判断。LAN 每秒广播 20 次快照，客户端平滑位置和即时响应视角。未实现移动预测、回滚与延迟补偿。
+
+`npm ci --ignore-scripts` · `npm run check` · `npm run build`。
+
+- `node --test tests/fps-sim.test.mjs tests/fps-network.test.mjs`：选枪权限、装备限制、刀的伤害 / 遮挡 / 保护、死亡元数据与真实 WebSocket 同步。
+- `node --test tests/fps-audio.test.mjs`：本地 / 远处 AWP 拉栓身份、爆头与击杀去重、刀命中音效和保护反馈。
+- `npm run test:fps:browser`：真实键鼠与 UI 的 B 选枪、三个装备槽、两级开镜、枪声 / 后坐力、刀攻击、反馈界面和重生；本地目标位置 / 生命值和死亡视角布置明确使用 `?qa=1` 接口。
+- `npm run test:fps:visual`：两队五种配套枪手的源动画轨迹 / 挂点、静态镜片，以及人物姿态、死亡接触、地图中的镜头路径与重生画面。
+- `node scripts/original-skins-qa.mjs`：原创新贴图、两队五武器的真实握持与原动作轨迹，以及正常按钮 / 按键对战；诊断场景与实战截图分别记录。
+- `node --test tests/fps-community-skins.test.mjs tests/fps-character-death.test.mjs`：社区模型原始字节、语义访问器和骨架一致性；两队真实蒙皮模型布娃娃的接地、关节、骨长、暂停、冻结与复活。
+- `node scripts/prepare-original-skins.mjs repack games/freight-fire/assets/viewmodel-cs2/original/recipe.json`：使用随仓库提供的源 JPEG 重建三份派生 GLB，拒绝源哈希或非颜色数据改变。
+
+报告与截图分别在 `artifacts/freight-rebuild/`、`artifacts/cs2-rig/`、`artifacts/characters-upgrade/`。采样验收不代表全部姿态与世界表面完全零相交；尚未在两台实体 LAN 电脑上验收。
+
+`dist/` 为完整静态大厅。`npm run package:fps` 可生成独立人机版与源码 ZIP，不自动发布。旧枪手 / Rocketbox / CC0 枪声文件与原署名作为历史资源保留，当前不加载。完整来源见 [素材署名](./credits.html) 与根目录 `THIRD_PARTY_NOTICES.md`。
+
+## 大厅封面
+
+运输船封面使用本作品地图、角色氛围作参考，通过内置 ImageGen 生成原创宣传画，随后仅缩放和编码为 1440×800 WebP；它是宣传插画而非实机截图。生成模式、完整最终提示词、分辨率与校验记录见 `cover-source.json`，旧 SVG 继续作为页面图标。

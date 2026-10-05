@@ -17,7 +17,7 @@
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
     "check": "node scripts/check.mjs",
-    "test": "node --test tests/fps-sim.test.mjs tests/fps-network.test.mjs tests/fps-audio.test.mjs tests/fps-audio-loading.test.mjs tests/fps-loading.test.mjs tests/fps-character-shoot.test.mjs tests/fps-character-death.test.mjs tests/fps-original-skins.test.mjs",
+    "test": "node --test tests/fps-sim.test.mjs tests/fps-network.test.mjs tests/fps-audio.test.mjs tests/fps-audio-loading.test.mjs tests/fps-loading.test.mjs tests/fps-character-shoot.test.mjs tests/fps-character-death.test.mjs tests/fps-original-skins.test.mjs tests/fps-community-skins.test.mjs tests/fps-death-camera.test.mjs",
     "build": "node scripts/check.mjs && node scripts/build.mjs",
     "preview": "node scripts/serve.mjs --preview",
     "lan:fps": "node scripts/lan-server.mjs",
@@ -31,7 +31,8 @@
     "test:fps:public-loading": "node scripts/freight-public-loading-qa.mjs",
     "test:fps:animation": "node scripts/character-animation-qa.mjs",
     "test:fps:skins": "node scripts/original-skins-qa.mjs",
-    "skins:repack": "node scripts/prepare-original-skins.mjs repack games/freight-fire/assets/viewmodel-cs2/original/recipe.json"
+    "skins:repack": "node scripts/prepare-original-skins.mjs repack games/freight-fire/assets/viewmodel-cs2/original/recipe.json",
+    "test:fps:public-characters": "node scripts/character-public-qa.mjs"
   },
   "dependencies": {
     "ws": "8.22.0"

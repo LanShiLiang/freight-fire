@@ -16,7 +16,7 @@
       "触屏"
     ],
     "entry": "games/freight-fire/index.html",
-    "cover": "games/freight-fire/cover.svg",
+    "cover": "games/freight-fire/cover.webp",
     "accent": "#496b7b",
     "featured": false
   }

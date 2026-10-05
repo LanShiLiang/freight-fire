@@ -413,6 +413,16 @@
       "sha256": "6a2813e82d3e21645b402313be6f0cd4c27fc88ebc21fbbc00f022ef2660342b"
     },
     {
+      "path": "games/freight-fire/assets/viewmodel-cs2/ak47-vulcan.glb",
+      "bytes": 2807216,
+      "sha256": "46c540e3869bb2737d633a67c578ce9e2665eae63f1c07544793ecf8de4f558c"
+    },
+    {
+      "path": "games/freight-fire/assets/viewmodel-cs2/ak47-vulcan.webp",
+      "bytes": 17244,
+      "sha256": "0440efdc1c0e1a8b1c831d90687e5adab5b734837a2ba079cb88011a9c8789dc"
+    },
+    {
       "path": "games/freight-fire/assets/viewmodel-cs2/animation-selection.json",
       "bytes": 976,
       "sha256": "a369d8d309ba409162b8fc36f256501238160c7735b83c9644019b52f7b6ae29"
@@ -458,6 +468,16 @@
       "sha256": "f15ab248a85e50387f96540630b6ebd8b6c3297f03e7e650b2e8b4351b818a37"
     },
     {
+      "path": "games/freight-fire/assets/viewmodel-cs2/m4a1-printstream.glb",
+      "bytes": 3592668,
+      "sha256": "6321cb8e979aaebf7f70ba77a36f2e0e84a40324d791b6b851088c2dc7af2a0e"
+    },
+    {
+      "path": "games/freight-fire/assets/viewmodel-cs2/m4a1-printstream.webp",
+      "bytes": 14020,
+      "sha256": "3d8fc8c2841350892d5d0306d3a7f9a2f36ca208aa232091d39a33001ebfad90"
+    },
+    {
       "path": "games/freight-fire/assets/viewmodel-cs2/manifest.json",
       "bytes": 4941,
       "sha256": "c39ffad87ceb2bea3b0a596f3f653c9abb3eb63181347c59c4d5b434548023b1"
@@ -493,6 +513,11 @@
       "sha256": "93e2b0b21bb457c6cebac098195e03a762efd7b70d429aa22f5077e8988ceb9d"
     },
     {
+      "path": "games/freight-fire/assets/viewmodel-cs2/skin-selection-community.json",
+      "bytes": 26817,
+      "sha256": "a4841f3747ac740494cb560f32f1ad9d6d3ed2db38a191f1de623890965195dd"
+    },
+    {
       "path": "games/freight-fire/assets/viewmodel-cs2/skin-selection.json",
       "bytes": 3097,
       "sha256": "8d59840c407c281e5338cc798a7dcfd83abcb51d499e7c6eb9d2551d52044c0c"
@@ -504,8 +529,8 @@
     },
     {
       "path": "games/freight-fire/assets/viewmodel-cs2/SOURCES.md",
-      "bytes": 4914,
-      "sha256": "3572f68a850392e0f7d69ec6d66a8863deeba18e2a6d14c5298e04fa0fc48bbf"
+      "bytes": 6475,
+      "sha256": "f13b3e85d2fafe061eb4a572eec2a7c7d36e883ca2a1ba13d5de3018169c4eb8"
     },
     {
       "path": "games/freight-fire/assets/viewmodel-cs2/t-phoenix-harbor.glb",
@@ -526,6 +551,21 @@
       "path": "games/freight-fire/vendor/BufferGeometryUtils.js",
       "bytes": 35551,
       "sha256": "248b3e8420bd3de805ca01845c1b0cc62aa2766f3c56bdcead265e306f8e715c"
+    },
+    {
+      "path": "games/freight-fire/vendor/cannon-es-LICENSE",
+      "bytes": 1125,
+      "sha256": "4714d0272f50cb21fe46fe29333c7c600d3c85b5ebd2a80f4db07e8cfccbf5b2"
+    },
+    {
+      "path": "games/freight-fire/vendor/cannon-es-source.json",
+      "bytes": 827,
+      "sha256": "85b75c49b355e2677ccd2a1bee5515bcbb1e7170e811511a5d67f4d7ccb84405"
+    },
+    {
+      "path": "games/freight-fire/vendor/cannon-es.js",
+      "bytes": 346256,
+      "sha256": "f0700cbd3a482954949b9d58c1b0f76dcc74767750297647a39d8c40dd63d37c"
     },
     {
       "path": "games/freight-fire/vendor/GLTFLoader.js",

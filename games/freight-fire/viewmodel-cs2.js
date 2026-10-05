@@ -6,8 +6,8 @@ import {declareAsset,loadGLTF} from './asset-loading.js';
 // Matching original weapon/finger/arm tracks, shared Source 2 skeleton.
 // No replacement firearm is fitted onto another weapon's hand animation.
 export const AUTHORED_RIGS=Object.freeze({
- m4a1:{file:'m4a1-golden-coil',model:'M4A1-S | Golden Coil'},
- ak47:{file:'ak47-docksteel',model:'AK-47 | Dock Steel'},
+ m4a1:{file:'m4a1-printstream',model:'M4A1-S | Printstream'},
+ ak47:{file:'ak47-vulcan',model:'AK-47 | Vulcan'},
  awp:{file:'awp-dragon-lore',model:'AWP | Dragon Lore'},
  usp:{file:'usp-kill-confirmed',model:'USP-S | Kill Confirmed'},
  knife:{file:'karambit-sapphire',model:'Karambit | Sapphire'},
@@ -21,7 +21,7 @@ const url=file=>new URL(`./assets/viewmodel-cs2/${file}.glb`,import.meta.url).hr
 const armFiles=Object.freeze({'ct-sas':'ct-sas-harbor','t-phoenix':'t-phoenix-harbor'});
 const modelAssets=[
  ['animations-selected',3719372,'第一人称动作'],['ct-sas-harbor',4144592,'保卫者 · 港湾警戒'],['t-phoenix-harbor',4523660,'潜伏者 · 港湾警戒'],
- ['m4a1-golden-coil',4516992,'M4A1 金蛇缠绕'],['ak47-docksteel',2696768,'AK-47 船坞黑钢'],
+ ['m4a1-printstream',3592668,'M4A1-S 印花集'],['ak47-vulcan',2807216,'AK-47 火神'],
  ['awp-dragon-lore',4490124,'AWM 狙击枪'],['usp-kill-confirmed',3266132,'USP 手枪'],['karambit-sapphire',2877116,'爪子刀'],
 ];
 for(const [file,bytes,label]of modelAssets)declareAsset(url(file),{bytes,label,group:'viewmodels'});

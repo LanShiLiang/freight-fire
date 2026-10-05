@@ -5,6 +5,10 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {makeServer} from './serve.mjs';
 import {root} from './catalog.mjs';
+import {fileURLToPath} from 'node:url';
+import {AUTHORED_RIGS} from '../games/freight-fire/viewmodel-cs2.js';
+import {assetLoading} from '../games/freight-fire/asset-loading.js';
+import {COMMUNITY_SKIN_SOURCE_PINS,verifyCommunitySkins} from './community-skins-verification.mjs';
 
 // The studio advances real packaged GLBs and native clips. It is explicitly
 // labelled as an animation diagnostic. The match section only reads __freight;
@@ -12,8 +16,9 @@ import {root} from './catalog.mjs';
 const option=name=>process.argv.find(value=>value.startsWith(name+'='))?.slice(name.length+1);
 const out=path.join(root,'artifacts','original-skins');
 const manifestPath=path.resolve(root,option('--manifest')||'games/freight-fire/assets/viewmodel-cs2/original-skins.json');
+const communityManifestPath=path.resolve(root,option('--community-manifest')||'games/freight-fire/assets/viewmodel-cs2/skin-selection-community.json');
 await mkdir(out,{recursive:true});
-const report={date:new Date().toISOString(),manifest:path.relative(root,manifestPath).replaceAll('\\','/'),checks:[],assets:[],textures:[],poses:[],gameplay:[],screenshots:[],errors:[],failedRequests:[],limitations:[
+const report={date:new Date().toISOString(),manifest:path.relative(root,manifestPath).replaceAll('\\','/'),communityManifest:path.relative(root,communityManifestPath).replaceAll('\\','/'),checks:[],assets:[],textures:[],poses:[],gameplay:[],screenshots:[],errors:[],failedRequests:[],limitations:[
  'Studio screenshots are clearly labelled deterministic animation diagnostics using real packaged models and native actions; they are not combat footage.',
  'The actual match uses normal UI and keyboard inputs. Game QA globals are read only.',
  'Death staging and three-angle corpse diagnostics are covered separately by character-animation-qa.mjs.'
@@ -61,7 +66,7 @@ async function verifyManifest() {
   check('Manifest checksum '+path.relative(root,filename),actual===entry.sha256&&(!Number.isFinite(bytes)||bytes===data.length),{trail,actual,expected:entry.sha256,bytes:data.length,expectedBytes:bytes});
   report.assets.push({trail,path:path.relative(root,filename).replaceAll('\\','/'),sha256:actual,bytes:data.length,verified:true});
  }
- const outputs=report.assets.filter(asset=>asset.verified&&/\.glb$/i.test(asset.path)&&/(^|\.)output(?:\.|$)/.test(asset.trail));check('At least three original skin GLB outputs are verified',outputs.length>=3,outputs);
+ const outputs=report.assets.filter(asset=>asset.verified&&/\.glb$/i.test(asset.path)&&/(^|\.)output(?:\.|$)/.test(asset.trail));check('Both Harbor hands and historical Dock Steel derivative outputs are verified',outputs.length===3,outputs);
  for(const asset of manifest.assets||[]){
   if(!asset.source||!asset.output)continue;const sourcePath=await localFile(asset.source),outputPath=await localFile(asset.output);if(!sourcePath||!outputPath||!outputPath.endsWith('.glb'))continue;
   const source=await readFile(sourcePath),output=await readFile(outputPath),ratio=output.length/source.length,sourceStructure=glbStructure(source),outputStructure=glbStructure(output);
@@ -79,10 +84,22 @@ async function verifyManifest() {
   const rgbaMipBytes=outputStructure.images.reduce((sum,image)=>sum+image.width*image.height*4*4/3,0);check('Per-model estimated texture memory remains bounded '+path.basename(outputPath),rgbaMipBytes<256*1048576,{rgbaMipMB:rgbaMipBytes/1048576,images:outputStructure.images});
   report.textures.push({asset:path.relative(root,outputPath).replaceAll('\\','/'),ratio,rgbaMipBytes,images:outputStructure.images,changed:[...changed],preservedPBR});
  }
+ const community=await verifyCommunitySkins({projectRoot:root,manifestPath:communityManifestPath});report.communitySkins=community.results;
+ for(const skin of community.results){
+  check('Current complete community PBR model and preview '+skin.model.materials[0].name,true,{output:skin.output,preview:skin.preview,images:skin.model.images,extensionsUsed:skin.model.extensionsUsed});
+  for(const comparison of skin.comparisons)check('Independent semantic geometry / original bones / UV / skin preservation '+skin.model.materials[0].name+' vs '+path.basename(comparison.path),comparison.identical,comparison);
+  for(const entry of [skin.output,skin.preview])report.assets.push({trail:'community.'+skin.weaponId,path:entry.path,sha256:entry.sha256,bytes:entry.bytes,verified:true});
+  const rgbaMipBytes=skin.model.images.reduce((sum,image)=>sum+image.width*image.height*4*4/3,0);check('Community texture memory remains bounded '+skin.model.materials[0].name,rgbaMipBytes<256*1048576,{rgbaMipMB:rgbaMipBytes/1048576,images:skin.model.images});
+ }
+ const records=assetLoading.snapshot.assets.filter(record=>record.group==='viewmodels'&&record.url.endsWith('.glb'));report.runtimeAssetDeclarations=[];
+ check('Runtime declares five weapons, two Harbor arms and original actions',records.length===8,{count:records.length});
+ for(const record of records){const filename=fileURLToPath(record.url),bytes=await readFile(filename);check('Runtime decoded download byte count '+path.basename(filename),record.totalBytes===bytes.length,{declared:record.totalBytes,actual:bytes.length,label:record.label});report.runtimeAssetDeclarations.push({path:path.relative(root,filename).replaceAll('\\','/'),bytes:bytes.length,label:record.label});}
+ for(const pin of COMMUNITY_SKIN_SOURCE_PINS)check('Current authored rig selects '+pin.model,AUTHORED_RIGS[pin.weaponId].file===pin.file&&AUTHORED_RIGS[pin.weaponId].model===pin.model,{actual:AUTHORED_RIGS[pin.weaponId],expected:pin.file});
+ for(const historical of ['ak47-docksteel','ak47-fire-serpent','m4a1-golden-coil','ct-sas','t-phoenix'])check('Historical model excluded from runtime requests '+historical,!records.some(record=>path.basename(fileURLToPath(record.url),'.glb')===historical));
  return manifest;
 }
 
-const fixture=`<!doctype html><title>Original harbor skins / animation diagnostics</title>
+const fixture=`<!doctype html><title>Community Vulcan / Printstream and Harbor hands / animation diagnostics</title>
 <style>html,body{margin:0;background:#889ca5}canvas{display:block}aside{position:fixed;left:24px;top:24px;padding:13px 19px;background:#102b3ae8;color:#e9f3f7;font:16px system-ui;white-space:pre;z-index:2}</style><aside id="caption">动画诊断 · 原生 GLB / 非实战录像</aside><canvas></canvas>`;
 const server=makeServer(root);await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const base=`http://127.0.0.1:${server.address().port}`;let browser,page;
@@ -128,7 +145,7 @@ try {
   for(const [kind,progress]of states){
    const pose=await page.evaluate(args=>__originalSkinPose(...args),[slot,kind,progress,team]);report.poses.push(pose);
    check(`Native rig ${team}/${pose.id}/${kind}/${progress}`,pose.finite&&pose.attachmentError<1e-5&&pose.scaleError<1e-5&&pose.trackError<2e-5&&pose.checked>30&&pose.uvStable,{attachmentError:pose.attachmentError,scaleError:pose.scaleError,trackError:pose.trackError,checked:pose.checked,uvStable:pose.uvStable});
-   const name=`diagnostic-${team}-${pose.id}-${kind}-${progress}`;await shot(name);
+   const name=`diagnostic-${team}-${pose.asset}-${kind}-${progress}`;await shot(name);
    if(kind==='idle'||pose.id==='ak47'&&kind==='reload'&&progress===.4){
     await page.evaluate(crop=>{const label=document.querySelector('#caption');label.style.left=(crop.x+10)+'px';label.style.top=(crop.y+10)+'px';label.style.fontSize='12px';},pose.crop);
     await shot(name+'-hands-detail',{clip:pose.crop});await page.evaluate(()=>{const label=document.querySelector('#caption');label.style.left='24px';label.style.top='24px';label.style.fontSize='16px';});
@@ -142,12 +159,12 @@ try {
   if(team){await page.keyboard.press('Escape');await page.locator('#menu').waitFor({state:'visible'});await page.locator('#leave').click();await page.locator('button[data-team="1"]').click();}
   await page.locator('#start').click();await page.waitForFunction(team=>{const q=__freight,p=q.snapshot?.players.find(player=>player.id===q.localId);return p?.alive&&p.team===team&&!q.paused;},team);await page.waitForTimeout(850);
   const read=()=>page.evaluate(()=>{const q=__freight,p=q.snapshot.players.find(player=>player.id===q.localId),vm=q.view.viewModel;return {time:q.snapshot.time,alive:p.alive,team:p.team,weapon:p.weapon,primary:p.primaryWeapon,position:[p.x,p.y,p.z],ammo:[...p.ammo],reserve:[...p.reserve],reloadUntil:p.reloadUntil,diagnostics:{...vm.diagnostics},paused:q.paused,actors:[...q.view.players.values()].map(({group})=>({team:group.userData.team,dead:group.userData.dead,pose:group.userData.poseStats,scaleError:Math.max(...Object.values(group.userData.bones).flatMap(bone=>bone.scale.toArray().map(value=>Math.abs(value-1))))}))};});
-  const initial=await read();await shot(`real-${team}-m4-harbor-hands`);
+  const initial=await read();await shot(`real-${team}-m4-printstream-harbor-hands`);
   await page.keyboard.down('KeyF');await page.waitForTimeout(420);await page.keyboard.up('KeyF');const fired=await read();check('Actual M4 fire '+team,fired.alive&&fired.ammo[0]<initial.ammo[0],{initial,fired});
-  await page.keyboard.press('KeyR');await page.waitForFunction(()=>{const q=__freight,p=q.snapshot.players.find(player=>player.id===q.localId);return p.reloadUntil>q.snapshot.time;});await page.waitForTimeout(550);await shot(`real-${team}-m4-reload-hands`);await page.waitForFunction(()=>{const q=__freight,p=q.snapshot.players.find(player=>player.id===q.localId);return p.reloadUntil<=q.snapshot.time&&p.ammo[0]===30;});
+  await page.keyboard.press('KeyR');await page.waitForFunction(()=>{const q=__freight,p=q.snapshot.players.find(player=>player.id===q.localId);return p.reloadUntil>q.snapshot.time;});await page.waitForTimeout(550);await shot(`real-${team}-m4-printstream-reload-hands`);await page.waitForFunction(()=>{const q=__freight,p=q.snapshot.players.find(player=>player.id===q.localId);return p.reloadUntil<=q.snapshot.time&&p.ammo[0]===30;});
   await page.keyboard.press('KeyB');await page.locator('#loadout').waitFor({state:'visible'});await page.locator('button[data-primary="1"]').click();await page.locator('#loadout').waitFor({state:'hidden'});await page.waitForFunction(()=>{const q=__freight,p=q.snapshot.players.find(player=>player.id===q.localId);return p.primaryWeapon===1&&p.weapon===1;});await page.waitForTimeout(850);
-  const selected=await read();await shot(`real-${team}-ak-docksteel-hands`);check('Actual B purchase selects the configured original AK '+team,selected.weapon===1&&selected.diagnostics.asset===assets.find(asset=>asset.id==='ak47').file,selected);
-  await page.keyboard.down('KeyF');await page.waitForTimeout(400);await page.keyboard.up('KeyF');const akShot=await read();check('Actual AK fire '+team,akShot.ammo[1]<selected.ammo[1],{selected,akShot});await page.keyboard.press('KeyR');await page.waitForTimeout(500);await shot(`real-${team}-ak-reload-hands`);
+  const selected=await read();await shot(`real-${team}-ak-vulcan-harbor-hands`);check('Actual B purchase selects the configured community AK Vulcan '+team,selected.weapon===1&&selected.diagnostics.asset===assets.find(asset=>asset.id==='ak47').file,selected);
+  await page.keyboard.down('KeyF');await page.waitForTimeout(400);await page.keyboard.up('KeyF');const akShot=await read();check('Actual AK fire '+team,akShot.ammo[1]<selected.ammo[1],{selected,akShot});await page.keyboard.press('KeyR');await page.waitForTimeout(500);await shot(`real-${team}-ak-vulcan-reload-hands`);
   const beforeMove=await read();await page.keyboard.down('KeyW');await page.waitForTimeout(650);await page.keyboard.up('KeyW');const moved=await read();check('Actual W movement preserves character geometry '+team,Math.hypot(moved.position[0]-beforeMove.position[0],moved.position[2]-beforeMove.position[2])>1&&moved.actors.every(actor=>actor.scaleError<1e-5),{beforeMove,moved});await shot(`real-${team}-walk-and-reload`);
   report.gameplay.push({team,initial,fired,selected,akShot,beforeMove,moved});
  }

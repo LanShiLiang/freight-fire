@@ -29,8 +29,9 @@ export class DeathCamera {
     this.fallQ.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI));
     this.fallQ.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),-.10));
   }
-  update(camera,dt) {
+  update(camera,dt,corpseTarget) {
     this.age+=Math.max(0,Math.min(.1,dt));
+    if(corpseTarget?.isVector3&&[corpseTarget.x,corpseTarget.y,corpseTarget.z].every(Number.isFinite))this.target.lerp(corpseTarget,1-Math.exp(-Math.max(0,dt)*8));
     if(this.age<.62) {
       const t=ease(clamp(this.age/.62,0,1));camera.position.copy(this.start).lerp(this.fall,t);camera.quaternion.copy(this.startQ).slerp(this.fallQ,t);
     } else {

@@ -183,8 +183,10 @@ export class ArenaRenderer {
         const kill=[...(snapshot?.events||[])].reverse().find(e=>e.type==='kill'&&(e.targetId??e.victimId)===local.id);
         const killer=list.find(p=>p.id===(local.killerId??kill?.playerId??kill?.killerId));this.deathCamera=new DeathCamera(local,this.camera,killer);
       }
-      this.deathCameraStats=this.deathCamera.update(this.camera,input.paused?0:dt);
-      const body=this.players.get(local.id)?.group;if(body)body.visible=this.deathCameraStats.showBody;
+      const body=this.players.get(local.id)?.group,bones=body?.userData.bones;
+      const corpseTarget=bones?.pelvis&&bones?.head_0?bones.pelvis.getWorldPosition(new THREE.Vector3()).lerp(bones.head_0.getWorldPosition(new THREE.Vector3()),.5):null;
+      this.deathCameraStats=this.deathCamera.update(this.camera,input.paused?0:dt,corpseTarget);
+      if(body)body.visible=this.deathCameraStats.showBody;
     } else {
       this.deathCamera=null;this.deathCameraStats=null;
       this.view.visible=false;this.cameraReady=false;
@@ -288,7 +290,7 @@ export class ArenaRenderer {
       }
     } else if(event.type==='kill') {
       const target=this.players.get(event.targetId)?.group;
-      if(target){target.userData.deathDirection=vec(event.direction||[0,0,1]);target.userData.deadAt=null;}
+      if(target){target.userData.deathDirection=vec(event.direction||[0,0,1]);target.userData.deathHitPoint=event.to?vec(event.to):null;target.userData.deadAt=null;}
     }
   }
 

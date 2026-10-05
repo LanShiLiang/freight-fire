@@ -1,0 +1,680 @@
+{
+  "schemaVersion": 1,
+  "selectedAt": "2026-10-05T12:17:41.834Z",
+  "source": "https://github.com/ETO-ze/dust2-web",
+  "sourceDocumentation": "https://github.com/ETO-ze/dust2-web/blob/main/docs/ASSETS.md",
+  "mirror": "https://cs2.duskrain.cn/",
+  "upstreamLock": {
+    "url": "https://raw.githubusercontent.com/ETO-ze/dust2-web/main/config/assets-lock.json",
+    "version": "5a82c6eead18b7e0",
+    "sha256": "329dc4f394aca84fafa2f287f75b26e1c0272c139bdb49ff283743575ca2ed34"
+  },
+  "origin": "Complete GLB and matching inventory preview copied byte-for-byte from the dust2-web CS2 asset mirror; no generated or repainted weapon textures.",
+  "rights": {
+    "holders": "Valve and the original Steam Workshop creators listed for each finish",
+    "note": "The asset mirror and code repository license do not relicense the game assets or Workshop finishes."
+  },
+  "geometryPolicy": "Original named weapon bones, node hierarchy/rest transforms, UVs, normals, tangents, indices, joint indices, skin weights and inverse bind matrix values remain byte-for-byte equivalent to the previously loaded same weapon model.",
+  "skins": [
+    {
+      "weaponId": "ak47",
+      "id": "ak47-vulcan",
+      "previous": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/ak47-docksteel.glb",
+        "bytes": 2696768,
+        "sha256": "67bfb2db963b8cdbd3941bb0749868069efb5d6b3c4ff782c1a6c4c37234b19f"
+      },
+      "geometryReference": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/ak47-fire-serpent.glb",
+        "bytes": 3400016,
+        "sha256": "3591d83e3c1de5eab06d4d656fbc0d6a6a753d984df438edb97c7d0549af2550"
+      },
+      "modelName": "AK-47 | Vulcan",
+      "paintKit": 302,
+      "creator": "jim´s",
+      "primarySources": [
+        "https://steamcommunity.com/sharedfiles/filedetails/?id=203495799"
+      ],
+      "selectionReason": "Mature black, white and cyan geometric finish, with distinct dark structural parts and restrained graphics.",
+      "source": {
+        "path": "assets/weapons/cs2-loadout/ak47-vulcan.glb",
+        "bytes": 2807216,
+        "sha256": "46c540e3869bb2737d633a67c578ce9e2665eae63f1c07544793ecf8de4f558c",
+        "group": "skin",
+        "url": "https://cs2.duskrain.cn/assets/weapons/cs2-loadout/ak47-vulcan.glb"
+      },
+      "output": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/ak47-vulcan.glb",
+        "bytes": 2807216,
+        "sha256": "46c540e3869bb2737d633a67c578ce9e2665eae63f1c07544793ecf8de4f558c"
+      },
+      "preview": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/ak47-vulcan.webp",
+        "bytes": 17244,
+        "sha256": "0440efdc1c0e1a8b1c831d90687e5adab5b734837a2ba079cb88011a9c8789dc",
+        "mimeType": "image/webp",
+        "width": 512,
+        "height": 384,
+        "url": "https://cs2.duskrain.cn/assets/weapons/cs2-loadout/previews/ak47-vulcan.webp"
+      },
+      "geometryComparison": {
+        "identical": true,
+        "structure": {
+          "nodesAndRestTransforms": true,
+          "sceneRoots": true,
+          "defaultScene": true,
+          "meshPrimitiveBindings": true,
+          "skinsAndJointIndices": true,
+          "animations": true,
+          "accessorCount": true
+        },
+        "accessors": [
+          {
+            "index": 0,
+            "semantic": "POSITION",
+            "count": 12935,
+            "type": "VEC3",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 155220,
+            "sourceSha256": "e639c1fe01c85473b6a113d7156a5c0109adcba417bfd802ce7d4dd9db1ee72e",
+            "outputSha256": "e639c1fe01c85473b6a113d7156a5c0109adcba417bfd802ce7d4dd9db1ee72e",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 1,
+            "semantic": "TEXCOORD_0",
+            "count": 12935,
+            "type": "VEC2",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 103480,
+            "sourceSha256": "a69939972143dc13b3fdaf9310456fdca223d8c552d49656953248a18b0f870b",
+            "outputSha256": "a69939972143dc13b3fdaf9310456fdca223d8c552d49656953248a18b0f870b",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 2,
+            "semantic": "NORMAL",
+            "count": 12935,
+            "type": "VEC3",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 155220,
+            "sourceSha256": "3be6faf5311728a6c7e0becb9fd46363b19455ad7dad4f45b7976a1ecc9338f9",
+            "outputSha256": "3be6faf5311728a6c7e0becb9fd46363b19455ad7dad4f45b7976a1ecc9338f9",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 3,
+            "semantic": "TANGENT",
+            "count": 12935,
+            "type": "VEC4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 206960,
+            "sourceSha256": "9ca524065267ba227952c9caec17dca8a4c46d866c76c3636a8a62eaf2bcc589",
+            "outputSha256": "9ca524065267ba227952c9caec17dca8a4c46d866c76c3636a8a62eaf2bcc589",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 4,
+            "semantic": "TEXCOORD_1",
+            "count": 12935,
+            "type": "VEC2",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 103480,
+            "sourceSha256": "8c69663fd0bb813dd063ef00e31ac35269d78b55ee4af8b54b938b9fb1fecab1",
+            "outputSha256": "8c69663fd0bb813dd063ef00e31ac35269d78b55ee4af8b54b938b9fb1fecab1",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 5,
+            "semantic": "JOINTS_0",
+            "count": 12935,
+            "type": "VEC4",
+            "componentType": 5123,
+            "metadataIdentical": true,
+            "byteLength": 103480,
+            "sourceSha256": "e225da80342cb22f154f8e2cdda80f33bacb7069e9a7e747fe34f198b40aa608",
+            "outputSha256": "e225da80342cb22f154f8e2cdda80f33bacb7069e9a7e747fe34f198b40aa608",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 6,
+            "semantic": "WEIGHTS_0",
+            "count": 12935,
+            "type": "VEC4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 206960,
+            "sourceSha256": "af9896d1de951d0863c7bf4d71ff9eb154f13788f34f8e19635523a7c1933c88",
+            "outputSha256": "af9896d1de951d0863c7bf4d71ff9eb154f13788f34f8e19635523a7c1933c88",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 7,
+            "semantic": "indices",
+            "count": 40305,
+            "type": "SCALAR",
+            "componentType": 5125,
+            "metadataIdentical": true,
+            "byteLength": 161220,
+            "sourceSha256": "815bd3657dbffeb54f5c17f9c4d51bedb5de8dbd1509aba73f9acc982b464b5e",
+            "outputSha256": "815bd3657dbffeb54f5c17f9c4d51bedb5de8dbd1509aba73f9acc982b464b5e",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 8,
+            "semantic": "inverseBindMatrices",
+            "count": 7,
+            "type": "MAT4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 448,
+            "sourceSha256": "cdcce772b02d1deba636971d59453ba7af46b9c2d1e041215918f72671bddff2",
+            "outputSha256": "cdcce772b02d1deba636971d59453ba7af46b9c2d1e041215918f72671bddff2",
+            "rawBytesIdentical": true
+          }
+        ],
+        "ignoredDisplayMetadata": [
+          "normalization.extras.paintkit",
+          "scenes[].name"
+        ],
+        "storageNote": "Accessor data are compared after resolving each bufferView; image count may shift inverseBindMatrices bufferView indices without changing the matrix bytes."
+      },
+      "previousGeometryComparison": {
+        "identical": true,
+        "structure": {
+          "nodesAndRestTransforms": true,
+          "sceneRoots": true,
+          "defaultScene": true,
+          "meshPrimitiveBindings": true,
+          "skinsAndJointIndices": true,
+          "animations": true,
+          "accessorCount": true
+        },
+        "accessors": [
+          {
+            "index": 0,
+            "semantic": "POSITION",
+            "count": 12935,
+            "type": "VEC3",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 155220,
+            "sourceSha256": "e639c1fe01c85473b6a113d7156a5c0109adcba417bfd802ce7d4dd9db1ee72e",
+            "outputSha256": "e639c1fe01c85473b6a113d7156a5c0109adcba417bfd802ce7d4dd9db1ee72e",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 1,
+            "semantic": "TEXCOORD_0",
+            "count": 12935,
+            "type": "VEC2",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 103480,
+            "sourceSha256": "a69939972143dc13b3fdaf9310456fdca223d8c552d49656953248a18b0f870b",
+            "outputSha256": "a69939972143dc13b3fdaf9310456fdca223d8c552d49656953248a18b0f870b",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 2,
+            "semantic": "NORMAL",
+            "count": 12935,
+            "type": "VEC3",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 155220,
+            "sourceSha256": "3be6faf5311728a6c7e0becb9fd46363b19455ad7dad4f45b7976a1ecc9338f9",
+            "outputSha256": "3be6faf5311728a6c7e0becb9fd46363b19455ad7dad4f45b7976a1ecc9338f9",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 3,
+            "semantic": "TANGENT",
+            "count": 12935,
+            "type": "VEC4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 206960,
+            "sourceSha256": "9ca524065267ba227952c9caec17dca8a4c46d866c76c3636a8a62eaf2bcc589",
+            "outputSha256": "9ca524065267ba227952c9caec17dca8a4c46d866c76c3636a8a62eaf2bcc589",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 4,
+            "semantic": "TEXCOORD_1",
+            "count": 12935,
+            "type": "VEC2",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 103480,
+            "sourceSha256": "8c69663fd0bb813dd063ef00e31ac35269d78b55ee4af8b54b938b9fb1fecab1",
+            "outputSha256": "8c69663fd0bb813dd063ef00e31ac35269d78b55ee4af8b54b938b9fb1fecab1",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 5,
+            "semantic": "JOINTS_0",
+            "count": 12935,
+            "type": "VEC4",
+            "componentType": 5123,
+            "metadataIdentical": true,
+            "byteLength": 103480,
+            "sourceSha256": "e225da80342cb22f154f8e2cdda80f33bacb7069e9a7e747fe34f198b40aa608",
+            "outputSha256": "e225da80342cb22f154f8e2cdda80f33bacb7069e9a7e747fe34f198b40aa608",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 6,
+            "semantic": "WEIGHTS_0",
+            "count": 12935,
+            "type": "VEC4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 206960,
+            "sourceSha256": "af9896d1de951d0863c7bf4d71ff9eb154f13788f34f8e19635523a7c1933c88",
+            "outputSha256": "af9896d1de951d0863c7bf4d71ff9eb154f13788f34f8e19635523a7c1933c88",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 7,
+            "semantic": "indices",
+            "count": 40305,
+            "type": "SCALAR",
+            "componentType": 5125,
+            "metadataIdentical": true,
+            "byteLength": 161220,
+            "sourceSha256": "815bd3657dbffeb54f5c17f9c4d51bedb5de8dbd1509aba73f9acc982b464b5e",
+            "outputSha256": "815bd3657dbffeb54f5c17f9c4d51bedb5de8dbd1509aba73f9acc982b464b5e",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 8,
+            "semantic": "inverseBindMatrices",
+            "count": 7,
+            "type": "MAT4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 448,
+            "sourceSha256": "cdcce772b02d1deba636971d59453ba7af46b9c2d1e041215918f72671bddff2",
+            "outputSha256": "cdcce772b02d1deba636971d59453ba7af46b9c2d1e041215918f72671bddff2",
+            "rawBytesIdentical": true
+          }
+        ],
+        "ignoredDisplayMetadata": [
+          "normalization.extras.paintkit",
+          "scenes[].name"
+        ],
+        "storageNote": "Accessor data are compared after resolving each bufferView; image count may shift inverseBindMatrices bufferView indices without changing the matrix bytes."
+      },
+      "embeddedTextures": [
+        {
+          "index": 0,
+          "name": "albedo.jpg",
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1199730,
+          "sha256": "1550fed579cda599f1a77d1cd49c87d853cc97b4981b999580c27939ecd2121e"
+        },
+        {
+          "index": 1,
+          "name": "orm.jpg",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 393879,
+          "sha256": "82f0fdf6c0141bb43ec8b8af248fa6a2e79adea5c30c964140ffe23ef1c04b40"
+        },
+        {
+          "index": 2,
+          "name": "ak47_normal_psd_57f37ac9.png",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 12554,
+          "sha256": "76098ae80de525cdd0b0c98467a0259eeb760b7a233060ac9d6928424e5a00bb"
+        }
+      ]
+    },
+    {
+      "weaponId": "m4a1",
+      "id": "m4a1-printstream",
+      "previous": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/m4a1-golden-coil.glb",
+        "bytes": 4516992,
+        "sha256": "f74ff219e5cc3087ed36e0935637c6bdade5772d28ed1cfb8f1376f9fde38ef3"
+      },
+      "geometryReference": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/m4a1-golden-coil.glb",
+        "bytes": 4516992,
+        "sha256": "f74ff219e5cc3087ed36e0935637c6bdade5772d28ed1cfb8f1376f9fde38ef3"
+      },
+      "modelName": "M4A1-S | Printstream",
+      "paintKit": 984,
+      "creator": "JTPNZ",
+      "primarySources": [
+        "https://steamcommunity.com/sharedfiles/filedetails/?id=2111422399",
+        "https://steamcommunity.com/market/listings/730/M4A1-S%20%7C%20Printstream%20%28Factory%20New%29"
+      ],
+      "selectionReason": "Established black and white finish with original pearl-mask texture, paired with the M4A1-S model and animation family.",
+      "source": {
+        "path": "assets/weapons/cs2-loadout/m4a1-printstream.glb",
+        "bytes": 3592668,
+        "sha256": "6321cb8e979aaebf7f70ba77a36f2e0e84a40324d791b6b851088c2dc7af2a0e",
+        "group": "skin",
+        "url": "https://cs2.duskrain.cn/assets/weapons/cs2-loadout/m4a1-printstream.glb"
+      },
+      "output": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/m4a1-printstream.glb",
+        "bytes": 3592668,
+        "sha256": "6321cb8e979aaebf7f70ba77a36f2e0e84a40324d791b6b851088c2dc7af2a0e"
+      },
+      "preview": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/m4a1-printstream.webp",
+        "bytes": 14020,
+        "sha256": "3d8fc8c2841350892d5d0306d3a7f9a2f36ca208aa232091d39a33001ebfad90",
+        "mimeType": "image/webp",
+        "width": 512,
+        "height": 384,
+        "url": "https://cs2.duskrain.cn/assets/weapons/cs2-loadout/previews/m4a1-printstream.webp"
+      },
+      "geometryComparison": {
+        "identical": true,
+        "structure": {
+          "nodesAndRestTransforms": true,
+          "sceneRoots": true,
+          "defaultScene": true,
+          "meshPrimitiveBindings": true,
+          "skinsAndJointIndices": true,
+          "animations": true,
+          "accessorCount": true
+        },
+        "accessors": [
+          {
+            "index": 0,
+            "semantic": "POSITION",
+            "count": 27709,
+            "type": "VEC3",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 332508,
+            "sourceSha256": "392a9b8f00ca9a2fa99aeb3670026f88698eda6da47d6f8d661edd696c492dfa",
+            "outputSha256": "392a9b8f00ca9a2fa99aeb3670026f88698eda6da47d6f8d661edd696c492dfa",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 1,
+            "semantic": "TEXCOORD_0",
+            "count": 27709,
+            "type": "VEC2",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 221672,
+            "sourceSha256": "3be47636aff3e9c68d04fc3fe49f9c54de78707aebde6f3a97947487bcd1dd06",
+            "outputSha256": "3be47636aff3e9c68d04fc3fe49f9c54de78707aebde6f3a97947487bcd1dd06",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 2,
+            "semantic": "NORMAL",
+            "count": 27709,
+            "type": "VEC3",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 332508,
+            "sourceSha256": "36eb23ddfec3ca215a2d76256ba5b01310fba9e77698f138105bb06797468997",
+            "outputSha256": "36eb23ddfec3ca215a2d76256ba5b01310fba9e77698f138105bb06797468997",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 3,
+            "semantic": "TANGENT",
+            "count": 27709,
+            "type": "VEC4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 443344,
+            "sourceSha256": "3a36f5d408c89a2e0db8a5925516ebd03aa5c8e4a8e085923126bd0b271809a7",
+            "outputSha256": "3a36f5d408c89a2e0db8a5925516ebd03aa5c8e4a8e085923126bd0b271809a7",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 4,
+            "semantic": "TEXCOORD_1",
+            "count": 27709,
+            "type": "VEC2",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 221672,
+            "sourceSha256": "38b12c4b5ced1b0ae056e6e5dee232c58bd3367acc692ba2fe85408f81a717f5",
+            "outputSha256": "38b12c4b5ced1b0ae056e6e5dee232c58bd3367acc692ba2fe85408f81a717f5",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 5,
+            "semantic": "JOINTS_0",
+            "count": 27709,
+            "type": "VEC4",
+            "componentType": 5123,
+            "metadataIdentical": true,
+            "byteLength": 221672,
+            "sourceSha256": "3e968d201b81564499df29b01c37725d16f4609aff6996dfa4f90c4a3c26ea47",
+            "outputSha256": "3e968d201b81564499df29b01c37725d16f4609aff6996dfa4f90c4a3c26ea47",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 6,
+            "semantic": "WEIGHTS_0",
+            "count": 27709,
+            "type": "VEC4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 443344,
+            "sourceSha256": "4d16f2a280fb6ce30ed78b0d646293b06c01fc98f2e4958e3967541bf6a84f0b",
+            "outputSha256": "4d16f2a280fb6ce30ed78b0d646293b06c01fc98f2e4958e3967541bf6a84f0b",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 7,
+            "semantic": "indices",
+            "count": 71100,
+            "type": "SCALAR",
+            "componentType": 5125,
+            "metadataIdentical": true,
+            "byteLength": 284400,
+            "sourceSha256": "72235e2f4ea097e04acf4441a0305eb5456f019540d4c13638773765105e7c02",
+            "outputSha256": "72235e2f4ea097e04acf4441a0305eb5456f019540d4c13638773765105e7c02",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 8,
+            "semantic": "inverseBindMatrices",
+            "count": 7,
+            "type": "MAT4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 448,
+            "sourceSha256": "f3d9b972497bcde2224d6c2be2ca57320bb20d240e0bad27a40f390b65ba94e8",
+            "outputSha256": "f3d9b972497bcde2224d6c2be2ca57320bb20d240e0bad27a40f390b65ba94e8",
+            "rawBytesIdentical": true
+          }
+        ],
+        "ignoredDisplayMetadata": [
+          "normalization.extras.paintkit",
+          "scenes[].name"
+        ],
+        "storageNote": "Accessor data are compared after resolving each bufferView; image count may shift inverseBindMatrices bufferView indices without changing the matrix bytes."
+      },
+      "previousGeometryComparison": {
+        "identical": true,
+        "structure": {
+          "nodesAndRestTransforms": true,
+          "sceneRoots": true,
+          "defaultScene": true,
+          "meshPrimitiveBindings": true,
+          "skinsAndJointIndices": true,
+          "animations": true,
+          "accessorCount": true
+        },
+        "accessors": [
+          {
+            "index": 0,
+            "semantic": "POSITION",
+            "count": 27709,
+            "type": "VEC3",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 332508,
+            "sourceSha256": "392a9b8f00ca9a2fa99aeb3670026f88698eda6da47d6f8d661edd696c492dfa",
+            "outputSha256": "392a9b8f00ca9a2fa99aeb3670026f88698eda6da47d6f8d661edd696c492dfa",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 1,
+            "semantic": "TEXCOORD_0",
+            "count": 27709,
+            "type": "VEC2",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 221672,
+            "sourceSha256": "3be47636aff3e9c68d04fc3fe49f9c54de78707aebde6f3a97947487bcd1dd06",
+            "outputSha256": "3be47636aff3e9c68d04fc3fe49f9c54de78707aebde6f3a97947487bcd1dd06",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 2,
+            "semantic": "NORMAL",
+            "count": 27709,
+            "type": "VEC3",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 332508,
+            "sourceSha256": "36eb23ddfec3ca215a2d76256ba5b01310fba9e77698f138105bb06797468997",
+            "outputSha256": "36eb23ddfec3ca215a2d76256ba5b01310fba9e77698f138105bb06797468997",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 3,
+            "semantic": "TANGENT",
+            "count": 27709,
+            "type": "VEC4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 443344,
+            "sourceSha256": "3a36f5d408c89a2e0db8a5925516ebd03aa5c8e4a8e085923126bd0b271809a7",
+            "outputSha256": "3a36f5d408c89a2e0db8a5925516ebd03aa5c8e4a8e085923126bd0b271809a7",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 4,
+            "semantic": "TEXCOORD_1",
+            "count": 27709,
+            "type": "VEC2",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 221672,
+            "sourceSha256": "38b12c4b5ced1b0ae056e6e5dee232c58bd3367acc692ba2fe85408f81a717f5",
+            "outputSha256": "38b12c4b5ced1b0ae056e6e5dee232c58bd3367acc692ba2fe85408f81a717f5",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 5,
+            "semantic": "JOINTS_0",
+            "count": 27709,
+            "type": "VEC4",
+            "componentType": 5123,
+            "metadataIdentical": true,
+            "byteLength": 221672,
+            "sourceSha256": "3e968d201b81564499df29b01c37725d16f4609aff6996dfa4f90c4a3c26ea47",
+            "outputSha256": "3e968d201b81564499df29b01c37725d16f4609aff6996dfa4f90c4a3c26ea47",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 6,
+            "semantic": "WEIGHTS_0",
+            "count": 27709,
+            "type": "VEC4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 443344,
+            "sourceSha256": "4d16f2a280fb6ce30ed78b0d646293b06c01fc98f2e4958e3967541bf6a84f0b",
+            "outputSha256": "4d16f2a280fb6ce30ed78b0d646293b06c01fc98f2e4958e3967541bf6a84f0b",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 7,
+            "semantic": "indices",
+            "count": 71100,
+            "type": "SCALAR",
+            "componentType": 5125,
+            "metadataIdentical": true,
+            "byteLength": 284400,
+            "sourceSha256": "72235e2f4ea097e04acf4441a0305eb5456f019540d4c13638773765105e7c02",
+            "outputSha256": "72235e2f4ea097e04acf4441a0305eb5456f019540d4c13638773765105e7c02",
+            "rawBytesIdentical": true
+          },
+          {
+            "index": 8,
+            "semantic": "inverseBindMatrices",
+            "count": 7,
+            "type": "MAT4",
+            "componentType": 5126,
+            "metadataIdentical": true,
+            "byteLength": 448,
+            "sourceSha256": "f3d9b972497bcde2224d6c2be2ca57320bb20d240e0bad27a40f390b65ba94e8",
+            "outputSha256": "f3d9b972497bcde2224d6c2be2ca57320bb20d240e0bad27a40f390b65ba94e8",
+            "rawBytesIdentical": true
+          }
+        ],
+        "ignoredDisplayMetadata": [
+          "normalization.extras.paintkit",
+          "scenes[].name"
+        ],
+        "storageNote": "Accessor data are compared after resolving each bufferView; image count may shift inverseBindMatrices bufferView indices without changing the matrix bytes."
+      },
+      "embeddedTextures": [
+        {
+          "index": 0,
+          "name": "albedo.jpg",
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 465280,
+          "sha256": "2bfb3ff2cc624a02e999fcffdd340f95051caf61bc97bbecf51e4244168cd017"
+        },
+        {
+          "index": 1,
+          "name": "orm.jpg",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 346364,
+          "sha256": "0e3984c253f36f144dc3390e2e451cfd0c23d7e47b7fe76cbd107ddc7bf5c68a"
+        },
+        {
+          "index": 2,
+          "name": "normal.jpg",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 266317,
+          "sha256": "49674a28d7c0bd12cd42dd5fa06be518dde0fb74a9d9f4e39a2c5950ee77c19b"
+        },
+        {
+          "index": 3,
+          "name": "iridescence.jpg",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 7973,
+          "sha256": "c53aeafde1b9f2f9698519b0c3a79299d6b2df69d7fc12212968bf2f150bbd6a"
+        }
+      ]
+    }
+  ]
+}

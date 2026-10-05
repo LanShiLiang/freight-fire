@@ -1,0 +1,33 @@
+{
+  "game": "freight-fire",
+  "title": "运输船",
+  "assetKind": "Original promotional cover artwork; not a gameplay screenshot",
+  "generator": "Built-in image_gen tool",
+  "createdDate": "2026-10-05",
+  "prompts": [
+    {
+      "mode": "generate",
+      "prompt": "Create original promotional KEY ART for a browser 3D tactical FPS game called Transport Ship, not a screenshot and not a UI mockup. Use the provided game screenshots ONLY as reference for the muted navy/olive container palette, metal cargo-ship deck, wooden crates, and navy gray glove styling. Ignore all screenshot UI/text. WIDE LANDSCAPE 1.8:1, approximately 1800x1000. Polished stylized 3D rendered illustration with convincing matte materials, fine worn steel, crisp silhouettes, warm rim light and teal harbor haze, restrained detail rather than gritty photoreal military photography. A single anonymous navy-clad helmeted tactical player with a gray/navy vest and gray gloves is the strong foreground subject around center-right, from waist up, holding a fictional dark prop rifle across the chest in a natural two-handed ready pose. Face hidden by mask/helmet, anatomically correct hands, no insignia. Camera at deck level with clear depth down a cargo-ship lane; olive and deep blue corrugated shipping containers, a few wooden crates, yellow ship crane above, ocean/harbor horizon in background. Keep the player's head and rifle clearly inside the central 75 percent of the frame, enough padding above the head and below the hands so modest cropping will not cut them. Small upper-left corner and bottom-right corner visually quiet for a category badge and play arrow. Composition should remain instantly readable at 400px card size. No embedded title, letters, numbers, markings, logos, brand symbols, watermark, UI, crosshair or border. No explosions, gore or casualty. Keep it mature cohesive game-cover artwork rather than flat geometric vector shapes.\n"
+    }
+  ],
+  "source": {
+    "width": 1681,
+    "height": 936,
+    "bytes": 2009777,
+    "sha256": "612e2fd70ec1f9065ba50353d68af88993487e59939a81e731cb10259206550d"
+  },
+  "output": {
+    "path": "games/freight-fire/cover.webp",
+    "width": 1440,
+    "height": 800,
+    "bytes": 138420,
+    "sha256": "cb62431cfff9e9d0356eddef9e533c56f15a3f1641e286b5a0dafa754f1ff1bf"
+  },
+  "integration": {
+    "operations": [
+      "center crop/resize to 1440x800",
+      "WebP quality 88, effort 6"
+    ],
+    "creativeEdits": "All artwork made by image_gen; integration only resizes and encodes."
+  }
+}
