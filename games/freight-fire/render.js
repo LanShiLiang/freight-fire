@@ -69,6 +69,13 @@ export class ArenaRenderer {
     this.setQuality(quality); this.resize();
   }
 
+  retryEnvironment() {
+    // Retain the already loaded rig library and WebGL context on map retries.
+    const previous=this.environment;this.environment=makeEnvironmentV2(MAP);this.ready=this.environment.userData.ready;
+    this.scene.remove(previous);this.scene.add(this.environment);
+    previous.traverse(obj=>{if(obj.isMesh){obj.geometry?.dispose();for(const material of [].concat(obj.material||[])){for(const key of ['map','normalMap','roughnessMap','metalnessMap','aoMap'])material[key]?.dispose();material.dispose();}}});
+  }
+
   createAtmosphere() {
     this.sky = new THREE.Mesh(new THREE.SphereGeometry(570,32,16),new THREE.ShaderMaterial({
       side:THREE.BackSide, depthWrite:false,

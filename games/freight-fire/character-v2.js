@@ -2,6 +2,7 @@ import * as THREE from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { clone } from './vendor/SkeletonUtils.js';
 import { WEAPONS, floorAt, resolveWorldSphere } from './sim.js';
+import { declareAsset, loadGLTF } from './asset-loading.js';
 
 // Original CS2 SAS/Phoenix meshes and their own skeleton animations.
 // Valve retains their rights: assets/characters-cs2/README.md.
@@ -11,18 +12,21 @@ const vector = () => new THREE.Vector3();
 const sourceBasisInverse = new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion(-.5,-.5,-.5,.5)).invert();
 const trackNode = track => THREE.PropertyBinding.parseTrackName(track.name).nodeName;
 const contactDirections=[];for(const x of [-1,0,1])for(const y of [-1,0,1])for(const z of [-1,0,1])if(x||y||z)contactDirections.push([x,y,z]);
+const modelBase=new URL('./assets/characters-cs2/',import.meta.url);
+const modelAssets=[['ct-sas.glb',3974156,'保卫者人物'],['t-phoenix.glb',4804936,'潜伏者人物'],['animations.glb',4802692,'人物动作']];
+for(const [path,bytes,label]of modelAssets)declareAsset(new URL(path,modelBase),{bytes,label,group:'characters'});
 
 export async function loadCharacters() {
   if(library) return library;
   if(!loading) loading=(async()=>{
-    const loader=new GLTFLoader(),base=new URL('./assets/characters-cs2/',import.meta.url);
-    const [defender,raider,animationSource]=await Promise.all(['ct-sas.glb','t-phoenix.glb','animations.glb'].map(path=>loader.loadAsync(new URL(path,base).href)));
+    const loader=new GLTFLoader();
+    const [defender,raider,animationSource]=await Promise.all(modelAssets.map(([path,bytes,label])=>loadGLTF(loader,new URL(path,modelBase),{bytes,label,group:'characters'})));
     for(const source of [defender,raider]) {
       const names=new Set();source.scene.traverse(o=>names.add(o.name));
       source.animations=animationSource.animations.map(original=>{const clip=original.clone();clip.tracks=clip.tracks.filter(t=>names.has(trackNode(t)));return clip;});
     }
     library={defender,raider};return library;
-  })();
+  })().catch(error=>{loading=null;throw error;});
   return loading;
 }
 

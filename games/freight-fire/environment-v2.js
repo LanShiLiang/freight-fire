@@ -1,10 +1,14 @@
 import * as THREE from './vendor/three.module.js';
 import { bakeGroup } from './models.js';
-import { classicSurfaceArt } from './surface-art.js';
+import { classicSurfaceArt,loadSurfaceImage,declareSurfaceImage } from './surface-art.js';
+import {declareAsset,loadAssetBuffer,trackTask} from './asset-loading.js';
+
+export function declareEnvironmentAssets(MAP){
+  if(MAP.geometry){declareAsset(new URL(MAP.geometry,import.meta.url),{label:'经典运输船结构',bytes:4326565,group:'environment'});for(const id of ['green_metal_rust','wooden_planks','metal_plate_02'])declareSurfaceImage(id+'_diff_1k.jpg');}
+}
 
 // Environment art only. Photographic PBR sources are CC0 and bundled locally.
 // See assets/textures/environment/sources.json for every source and checksum.
-const ROOT = new URL('./assets/textures/environment/', import.meta.url);
 const Y = new THREE.Vector3(0, 1, 0);
 const cylinder = new THREE.CylinderGeometry(1, 1, 1, 12);
 const sphere = new THREE.SphereGeometry(1, 10, 6);
@@ -68,11 +72,11 @@ function contactShadow(g,x,z,w,d,strength=.29) {
 }
 
 function createMaterials() {
-  const pending=[],loader=new THREE.TextureLoader(),cache=new Map();
+  const pending=[],cache=new Map();
   const tex=(filename,color=false)=>{
     if(cache.has(filename))return cache.get(filename);
-    let resolve,reject;pending.push(new Promise((a,b)=>{resolve=a;reject=b;}));
-    const texture=loader.load(new URL(filename,ROOT).href,resolve,undefined,reject);
+    const texture=new THREE.Texture();
+    pending.push(loadSurfaceImage(filename).then(image=>{texture.image=image;texture.needsUpdate=true;return texture;}));
     texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.anisotropy=8;texture.colorSpace=color?THREE.SRGBColorSpace:THREE.NoColorSpace;cache.set(filename,texture);return texture;
   };
   const pbr=(asset,color,normal=.5,metal=.3)=>new THREE.MeshStandardMaterial({
@@ -338,7 +342,11 @@ function makeClassicEnvironment(MAP){
     if(key==='y_00002')return m.steel;
     return m.dark;
   };
-  const geometryReady=Promise.all([fetch(new URL(MAP.geometry,import.meta.url)).then(r=>{if(!r.ok)throw new Error('Classic map geometry '+r.status);return r.json();}),classicSurfaceArt()]).then(([groups,art])=>{
+  const geometryURL=new URL(MAP.geometry,import.meta.url),bytes=4326565;
+  declareAsset(geometryURL,{label:'经典运输船结构',bytes,group:'environment'});
+  const geometryData=loadAssetBuffer(geometryURL,{label:'经典运输船结构',bytes,group:'environment',deferReady:true}).then(buffer=>
+    trackTask(geometryURL,{label:'经典运输船结构',group:'environment',phase:'parse'},()=>JSON.parse(new TextDecoder().decode(buffer))));
+  const geometryReady=Promise.all([geometryData,classicSurfaceArt()]).then(([groups,art])=>trackTask(new URL('./assets/maps/classic-geometry.json?assembly',import.meta.url),{label:'构建运输船表面',group:'environment',phase:'prepare'},()=>{
     const parts=new THREE.Group();
     for(const [name,data]of Object.entries(groups)){
       const geometry=new THREE.BufferGeometry();
@@ -348,7 +356,7 @@ function makeClassicEnvironment(MAP){
       const obj=new THREE.Mesh(geometry,name.includes('metalfence')||dark?category(name):art.material(name));obj.castShadow=!name.includes('metalfence');obj.receiveShadow=true;parts.add(obj);
     }
     group.add(bakeGroup(parts));
-  });
+  })).catch(error=>{console.warn('运输船环境准备失败',error);throw error;});
   group.name='Classic Transport Ship / shared structural geometry';
   group.userData.ready=Promise.all([...pending,geometryReady]);
   group.userData.collisionNotes='Visible faces and convex collision planes come from the same structural reference, including both cabin doors and the side passages.';

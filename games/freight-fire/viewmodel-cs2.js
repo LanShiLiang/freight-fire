@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {clone as cloneSkeleton} from './vendor/SkeletonUtils.js';
+import {declareAsset,loadGLTF} from './asset-loading.js';
 
 // Matching original weapon/finger/arm tracks, shared Source 2 skeleton.
 // No replacement firearm is fitted onto another weapon's hand animation.
@@ -17,6 +18,13 @@ const V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z),clamp=n=>Math.max(0,Math.min(1,n
 // Cancel the duplicate exported basis at the original animated wpn joint.
 export const WEAPON_SOURCE_BASIS_INVERSE=new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion(-.5,-.5,-.5,.5)).invert();
 const url=file=>new URL(`./assets/viewmodel-cs2/${file}.glb`,import.meta.url).href;
+const modelAssets=[
+ ['animations-selected',3719372,'第一人称动作'],['ct-sas',4280896,'保卫者手模'],['t-phoenix',4782448,'潜伏者手模'],
+ ['m4a1-golden-coil',4516992,'M4A1 金蛇缠绕'],['ak47-fire-serpent',3400016,'AK-47 火蛇'],
+ ['awp-dragon-lore',4490124,'AWM 狙击枪'],['usp-kill-confirmed',3266132,'USP 手枪'],['karambit-sapphire',2877116,'爪子刀'],
+];
+for(const [file,bytes,label]of modelAssets)declareAsset(url(file),{bytes,label,group:'viewmodels'});
+const loadModel=(loader,file)=>{const [,bytes,label]=modelAssets.find(asset=>asset[0]===file);return loadGLTF(loader,url(file),{bytes,label,group:'viewmodels'});};
 function prepare(root){root.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.castShadow=false;o.receiveShadow=false;o.userData.sharedAsset=true;for(const m of [].concat(o.material)){if(m.map)m.map.anisotropy=4;m.envMapIntensity=.7;}}});}
 function rawWeapon(source){const root=cloneSkeleton(source.scene),wrapper=root.getObjectByName('normalization');if(wrapper){wrapper.matrixAutoUpdate=true;wrapper.position.set(0,0,0);wrapper.quaternion.identity();wrapper.scale.set(1,1,1);wrapper.updateMatrix();}return root;}
 function staticGlass(root){
@@ -29,10 +37,10 @@ function staticGlass(root){
  });
 }
 export async function loadViewModels(){if(loading)return loading;loading=(async()=>{const loader=new GLTFLoader();await Promise.all([
- loader.loadAsync(url('animations-selected')).then(source=>animations=source),
- ...['ct-sas','t-phoenix'].map(async id=>{const source=await loader.loadAsync(url(id));prepare(source.scene);arms.set(id,source);}),
- ...ids.map(async id=>{const source=await loader.loadAsync(url(AUTHORED_RIGS[id].file));if(id==='awp')staticGlass(source.scene);prepare(source.scene);sources.set(id,source);}),
- ]);})();return loading;}
+ loadModel(loader,'animations-selected').then(source=>animations=source),
+ ...['ct-sas','t-phoenix'].map(async id=>{const source=await loadModel(loader,id);prepare(source.scene);arms.set(id,source);}),
+ ...ids.map(async id=>{const source=await loadModel(loader,AUTHORED_RIGS[id].file);if(id==='awp')staticGlass(source.scene);prepare(source.scene);sources.set(id,source);}),
+ ]);})().catch(error=>{loading=null;throw error;});return loading;}
 function attach(r){r.root.updateWorldMatrix(true,true);new THREE.Matrix4().copy(r.root.matrixWorld).invert().multiply(r.anchor.matrixWorld).multiply(WEAPON_SOURCE_BASIS_INVERSE).decompose(r.mount.position,r.mount.quaternion,r.mount.scale);r.mount.updateWorldMatrix(false,true);}
 function play(r,name,{loop=name==='idle',duration=0}={}){const action=r.actions[name]||r.actions.idle;if(!action)return;r.mixer.stopAllAction();action.reset().setEffectiveWeight(1).setEffectiveTimeScale(duration>0?action.getClip().duration/duration:1).setLoop(loop?THREE.LoopRepeat:THREE.LoopOnce,loop?Infinity:1);action.clampWhenFinished=!loop;action.play();r.action=action;r.state=name;return action;}
 function createRig(id,agent='ct-sas'){

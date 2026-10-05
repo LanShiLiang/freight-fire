@@ -17,7 +17,7 @@
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
     "check": "node scripts/check.mjs",
-    "test": "node --test tests/fps-sim.test.mjs tests/fps-network.test.mjs tests/fps-audio.test.mjs",
+    "test": "node --test tests/fps-sim.test.mjs tests/fps-network.test.mjs tests/fps-audio.test.mjs tests/fps-audio-loading.test.mjs tests/fps-loading.test.mjs",
     "build": "node scripts/check.mjs && node scripts/build.mjs",
     "preview": "node scripts/serve.mjs --preview",
     "lan:fps": "node scripts/lan-server.mjs",
@@ -26,7 +26,9 @@
     "test:fps:visual": "node scripts/fps-visual-qa.mjs",
     "test:fps:rigs": "node scripts/cs2-rig-qa.mjs",
     "test:fps:characters": "node scripts/characters-upgrade-qa.mjs",
-    "test:fps:public": "node scripts/freight-public-qa.mjs"
+    "test:fps:public": "node scripts/freight-public-qa.mjs",
+    "test:fps:loading": "node scripts/freight-loading-qa.mjs",
+    "test:fps:public-loading": "node scripts/freight-public-loading-qa.mjs"
   },
   "dependencies": {
     "ws": "8.22.0"

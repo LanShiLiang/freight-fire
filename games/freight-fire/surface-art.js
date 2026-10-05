@@ -1,8 +1,33 @@
 import * as THREE from './vendor/three.module.js';
+import {declareAsset,loadAssetBuffer,trackTask} from './asset-loading.js';
 
 // Painted in face UV space: ribs, doors, timber frames and plate joints stay
 // attached to their original faces. Small CC0 photographs supply material grain.
 const ROOT=new URL('./assets/textures/environment/',import.meta.url);
+// Uncompressed bytes of the bundled photographs. HTTP Content-Length may be
+// the gzip transfer size, so it is not a reliable texture progress denominator.
+const IMAGE_BYTES={
+ 'camouflage.svg':945,
+ 'green_metal_rust_diff_1k.jpg':212088,'green_metal_rust_nor_gl_1k.jpg':121379,'green_metal_rust_arm_1k.jpg':108674,
+ 'wooden_planks_diff_1k.jpg':489587,'wooden_planks_nor_gl_1k.jpg':705118,'wooden_planks_arm_1k.jpg':468546,
+ 'metal_plate_02_diff_1k.jpg':625917,'metal_plate_02_nor_gl_1k.jpg':183264,'metal_plate_02_arm_1k.jpg':1075839,
+};
+const images=new Map();
+export function declareSurfaceImage(name){return declareAsset(new URL(name,ROOT),{label:'运输船贴图 · '+name,bytes:IMAGE_BYTES[name],group:'environment'});}
+export function loadSurfaceImage(name){
+ const cached=images.get(name);if(cached)return cached;
+ const url=new URL(name,ROOT),record=declareSurfaceImage(name);
+ const pending=loadAssetBuffer(url,{label:record.label,bytes:IMAGE_BYTES[name],group:'environment',deferReady:true}).then(buffer=>
+  trackTask(url,{label:record.label,group:'environment',phase:'decode',timeoutMs:20000},()=>new Promise((resolve,reject)=>{
+   const image=new Image(),objectURL=URL.createObjectURL(new Blob([buffer],{type:name.endsWith('.svg')?'image/svg+xml':'image/jpeg'}));
+   let settled=false;
+   const finish=(error)=>{if(settled)return;settled=true;clearTimeout(timer);image.onload=image.onerror=null;URL.revokeObjectURL(objectURL);if(error){image.src='';reject(error);}else resolve(image);};
+   const timer=setTimeout(()=>finish(new Error('贴图解码超过 20 秒，请重试')),20000);
+   image.onload=()=>finish();image.onerror=()=>finish(new Error('贴图无法解码'));image.src=objectURL;
+  }))
+ ).catch(error=>{if(images.get(name)===pending)images.delete(name);console.warn('运输船贴图加载失败',error);throw error;});
+ images.set(name,pending);return pending;
+}
 const N=1024;
 function canvas(){const a=document.createElement('canvas');a.width=a.height=N;return a;}
 function texture(a,color=false){const t=new THREE.CanvasTexture(a);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;t.colorSpace=color?THREE.SRGBColorSpace:THREE.NoColorSpace;return t;}
@@ -41,7 +66,7 @@ function paint(kind,color,photo,seed){
  const mat=new THREE.MeshStandardMaterial({map:texture(a,true),normalMap:normalFromHeight(h),normalScale:new THREE.Vector2(.55,.55),roughness:kind==='wood'?.92:.78,metalness:kind==='wood'||kind==='tarp'?0:.18});mat.name=`Painted ${kind} ${color}`;return mat;
 }
 export async function classicSurfaceArt(){
- const load=async name=>{const t=await new THREE.TextureLoader().loadAsync(new URL(name+'_diff_1k.jpg',ROOT).href);return t.image;};
+ const load=name=>loadSurfaceImage(name+'_diff_1k.jpg');
  const [steel,wood,deck]=await Promise.all([load('green_metal_rust'),load('wooden_planks'),load('metal_plate_02')]);
  const palette={white:'#aebdbb',blue:'#315971',green:'#46563a',yellow:'#aa9445'},materials=new Map();
  const get=(kind,color)=>{const key=kind+color;if(!materials.has(key))materials.set(key,paint(kind,color,kind==='wood'?wood:kind==='deck'?deck:steel,materials.size+43));return materials.get(key);};

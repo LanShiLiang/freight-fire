@@ -5,8 +5,12 @@ import {BattleAudio} from './audio.js';
 import {LanClient} from './network.js';
 import {loadCharacters} from './character-v2.js';
 import {loadViewModels} from './viewmodel.js';
+import {assetLoading} from './asset-loading.js';
+import {loadingScreen} from './loading-screen.js';
+import {declareEnvironmentAssets} from './environment-v2.js';
 
 const $=s=>document.querySelector(s), canvas=$('#arena'), audio=new BattleAudio(),staticMode=document.body.dataset.static==='true';
+loadingScreen.markStarted();declareEnvironmentAssets(MAP);assetLoading.subscribe(state=>loadingScreen.update(state));
 if(staticMode){$('[data-mode="lan"]').hidden=true;}
 let view,match=null,snapshot=null,selfId=null,client=null,mode='offline',team=0,room=null,hostId=null;
 let paused=true,active=false,lockFallback=false,lastEvent=-1,lastTime=0,lastHud=0,lastNet=0,frameTime=performance.now(),accumulator=0,noticeUntil=0,damageUntil=0,hitUntil=0,lastResult=false;
@@ -85,4 +89,18 @@ $('#start').onclick=startOffline;$('#resume').onclick=resume;$('#menu-button').o
 $('#fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{notice('可按 F11 使用浏览器全屏',4)}};
 window.addEventListener('resize',()=>view?.resize());
 function frame(now){const dt=Math.min(.08,(now-frameTime)/1000);frameTime=now;if(resumeScope&&now>=scopeResumeAt&&me()?.alive&&me()?.weapon===2&&!paused&&!buyOpen){scopeLevel=resumeScope;resumeScope=0;}sampleInput();if(match&&active&&!paused&&snapshot?.status==='playing'){accumulator=Math.min(.15,accumulator+dt);while(accumulator>=1/60){match.input(selfId,combatInput());match.step(1/60);input.reload=false;delete input.primaryWeapon;accumulator-=1/60;}receive(match.snapshot());}if(client&&active&&now-lastNet>33){if(client.sendInput(combatInput())){input.reload=false;delete input.primaryWeapon;}lastNet=now;}if(active){processEvents();const p=me();audio.syncWeapon(p);if(p?.alive&&!paused&&!buyOpen)audio.footsteps(now/1000,p.grounded&&Math.hypot(p.vx,p.vz)>.2,p.walking||p.crouching);if(now-lastHud>100){updateHUD(now);lastHud=now;}}view.render(snapshot||{time:now/1000,players:[],score:[0,0],events:[]},active?selfId:null,{...input,zoomLevel:scopeLevel,paused},dt);$('#notice').style.opacity=now<noticeUntil&&!paused?'1':'0';$('#hitmarker').style.opacity=now<hitUntil?'1':'0';$('#damage-flash').style.opacity=now<damageUntil?String((damageUntil-now)/500):'0';requestAnimationFrame(frame);}
-try{await Promise.all([loadCharacters(),loadViewModels()]);view=new ArenaRenderer(canvas,{quality:$('#quality').value});await view.ready;$('#loading').hidden=true;requestAnimationFrame(frame);const query=new URLSearchParams(location.search);if(!staticMode&&query.has('room')){setMode('lan');$('#room-code').value=query.get('room');status('好友邀请已填好，输入呼号后点击“加入房间”。');}if(query.has('qa'))Object.defineProperty(window,'__freight',{value:{get snapshot(){return snapshot},get localId(){return selfId},get match(){return match},get input(){return input},get view(){return view},get audio(){return audio},get paused(){return paused},get zoomLevel(){return scopeLevel},get buyOpen(){return buyOpen},pause,resume,restart,startOffline,leave}});}catch(e){$('#loading').textContent='无法启动 3D：'+e.message+'。请使用开启硬件加速的 Chrome / Edge。';console.error(e);}
+let initializing=false,renderLoopStarted=false;
+async function initializeArena(){
+ if(initializing)return;initializing=true;loadingScreen.begin();loadingScreen.onRetry(initializeArena);assetLoading.resetFailed();
+ let creatingRenderer=false;
+ try{
+  loadingScreen.stage('下载人物、枪械与配套动作…');await Promise.all([loadCharacters(),loadViewModels()]);
+  audio.prepare({retryFailed:true});loadingScreen.stage('准备运输船甲板与贴图…');
+  if(!view){creatingRenderer=true;view=new ArenaRenderer(canvas,{quality:$('#quality').value});creatingRenderer=false;}else view.retryEnvironment();
+  await view.ready;loadingScreen.complete();if(!renderLoopStarted){renderLoopStarted=true;frameTime=performance.now();requestAnimationFrame(frame);}
+  const query=new URLSearchParams(location.search);if(!staticMode&&query.has('room')){setMode('lan');$('#room-code').value=query.get('room');status('好友邀请已填好，输入呼号后点击“加入房间”。');}
+  if(query.has('qa')&&!window.__freight)Object.defineProperty(window,'__freight',{value:{get snapshot(){return snapshot},get localId(){return selfId},get match(){return match},get input(){return input},get view(){return view},get audio(){return audio},get paused(){return paused},get zoomLevel(){return scopeLevel},get buyOpen(){return buyOpen},get loading(){return assetLoading.snapshot},pause,resume,restart,startOffline,leave}});
+ }catch(error){loadingScreen.fail(error,{webgl:creatingRenderer});console.error(error);}
+ finally{initializing=false;}
+}
+await initializeArena();

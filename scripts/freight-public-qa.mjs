@@ -97,6 +97,10 @@ try {
   await page.waitForTimeout(750);
   const initial = await state(); assert.equal(initial.playerCount, 8); assert.equal(initial.bots, 7); assert.equal(initial.weapon, 0);
   assert.match(initial.view.asset, /m4a1-golden-coil/); assert.ok(initial.view.attachmentError < 1e-5);
+  // Audio is optional background work. Observe its real completion without
+  // making that download a requirement for clicking Start or moving.
+  await page.evaluate(async()=>{const audio=window.__freight.audio;await audio.ready;await audio.decoded;});
+  Object.assign(initial.audio,(await state()).audio);
   assert.equal(initial.audio.enabled, true); assert.equal(initial.audio.state, 'running');
   assert.equal(initial.audio.samples, initial.audio.expected); assert.ok(initial.audio.samples > 0); assert.deepEqual(initial.audio.errors, []);
   for (const bank of ['m4a1', 'ak47', 'awp', 'knifeDraw', 'kill', 'headHit']) assert.ok(initial.audio.banks.includes(bank), bank);

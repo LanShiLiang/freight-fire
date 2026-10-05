@@ -7,12 +7,25 @@
   <title>运输船 · Transport Ship</title>
   <link rel="icon" type="image/svg+xml" href="./cover.svg">
   <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./game.js"></script>
+  <script type="module" src="./boot.js"></script>
 </head>
 <body>
   <canvas id="arena" aria-label="3D 货轮战场"></canvas>
   <div class="vignette" aria-hidden="true"></div>
-  <div id="loading" role="status">正在装载甲板…</div>
+  <section id="loading" aria-labelledby="loading-title"><div class="loading-card">
+    <p class="loading-kicker">TRANSPORT SHIP / 运输船</p><h2 id="loading-title">准备登船</h2>
+    <p id="loading-stage" role="status" aria-live="polite">连接战场脚本…</p>
+    <div class="loading-progress-heading"><span>资源下载</span><strong id="loading-percent">连接中</strong></div>
+    <progress id="loading-progress" max="100" aria-label="战场资源下载进度"></progress>
+    <div class="loading-metrics"><span>下载量<strong id="loading-bytes">等待连接</strong></span><span>资源就绪<strong id="loading-count">—</strong></span><span>已用时<strong id="loading-elapsed">0 秒</strong></span></div>
+    <p id="loading-help">首次进入需要下载模型，已完成的资源会保留。</p>
+    <button id="loading-retry" onclick="location.reload()" hidden>重新载入页面 ↗</button>
+    <details id="loading-diagnostics"><summary>查看加载详情</summary><pre id="loading-details">正在连接战场脚本…</pre></details>
+  </div></section>
+  <script>
+    // A readable fallback even if the entry module itself cannot be fetched.
+    setTimeout(function(){if(!document.body.dataset.loadingController&&!document.getElementById('loading').hidden){document.getElementById('loading-title').textContent='加载中断';document.getElementById('loading-stage').textContent='战场脚本未能载入';document.getElementById('loading-help').textContent='连接超过 45 秒没有完成，请重试。';document.getElementById('loading-retry').hidden=false;}},45000);
+  </script>
   <div id="hud" hidden>
     <div class="match-bar"><div class="blue-score"><span>保卫者</span><b id="score-blue">0</b></div><div class="match-clock"><strong id="clock">05:00</strong><small id="goal-label">先到 40 分</small></div><div class="orange-score"><b id="score-orange">0</b><span>潜伏者</span></div></div>
     <div class="radar-wrap"><canvas id="radar" width="170" height="170" aria-label="战术雷达"></canvas><span>TRANSPORT / 运输船</span></div>
