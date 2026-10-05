@@ -85,12 +85,13 @@ function corpseGeometry(actor){
     }
   });
   const headFootVertexDistances=['L','R'].map(side=>{let min=Infinity;for(const a of head)for(const b of feet[side])min=Math.min(min,a.distanceToSquared(b));return Math.sqrt(min);});
-  return {box,size:size.toArray(),headHip:point(actor,'head_0').distanceTo(point(actor,'pelvis')),headAnkles:['L','R'].map(side=>point(actor,'head_0').distanceTo(point(actor,'ankle_'+side))),
+  const headPoint=point(actor,'head_0'),hipPoint=point(actor,'pelvis'),headHip=headPoint.distanceTo(hipPoint);
+  return {box,size:size.toArray(),headHip,headHeight:headPoint.y,pelvisHeight:hipPoint.y,torsoVerticalRatio:Math.abs(headPoint.y-hipPoint.y)/headHip,headAnkles:['L','R'].map(side=>headPoint.distanceTo(point(actor,'ankle_'+side))),
     legSpans:['L','R'].map(side=>point(actor,'leg_upper_'+side).distanceTo(point(actor,'ankle_'+side))),footSeparation:point(actor,'ankle_L').distanceTo(point(actor,'ankle_R')),headFootVertexDistances};
 }
 // Vertex sampling is a corroborating metric, not a triangle intersection test.
-const extendedLowerBody=geometry=>Math.max(...geometry.headAnkles)>.9||geometry.legSpans.every(value=>value>.60);
-const spreadGeometry=geometry=>geometry.headHip>.60&&extendedLowerBody(geometry)&&geometry.legSpans.every(value=>value>.46)&&geometry.headFootVertexDistances.every(value=>Number.isFinite(value)&&value>1e-4)
+const extendedLowerBody=geometry=>Math.max(...geometry.headAnkles)>.9||geometry.legSpans.every(value=>value>.60)||(Math.max(...geometry.legSpans)>.75&&Math.max(...geometry.headAnkles)>.8);
+const spreadGeometry=geometry=>geometry.headHip>.60&&geometry.torsoVerticalRatio<=.6&&extendedLowerBody(geometry)&&geometry.legSpans.every(value=>value>.46)&&geometry.headFootVertexDistances.every(value=>Number.isFinite(value)&&value>1e-4)
   &&Math.max(geometry.size[0],geometry.size[2])>1.2&&geometry.size[1]<1.05&&geometry.box.min.y>=-.055&&geometry.box.min.y<.09;
 
 test('death builds genuine fifteen-body Cannon worlds with anatomical joint constraints and no scene walls',async()=>{
@@ -101,7 +102,11 @@ test('death builds genuine fifteen-body Cannon worlds with anatomical joint cons
     assert.equal(state.joints.filter(joint=>joint.constraint instanceof CANNON.ConeTwistConstraint).length,10);
     assert.equal(state.world.gravity.y,-9.81);assert.ok(state.world.bodies.filter(body=>body.mass===0).every(body=>body.shapes[0] instanceof CANNON.Plane));
     assert.equal(state.world.allowSleep,false);assert.ok(state.bodies.every(body=>!body.allowSleep),'Connected limbs must not become sleeping solver anchors independently');
-    assert.ok(actor.userData.deathStats.contactVertices>100);checkOffsets(actor);clearCharacterDeath(actor);assert.equal(state.world,null);
+    assert.equal(state.bindings.filter(({body})=>body.shapes[0] instanceof CANNON.Cylinder).length,10,'Eight limbs and both trunk segments use rounded compound proxies');
+    for(const {bone,body}of state.bindings)if(bone.name.startsWith('hand_'))assert.equal(body.material.name,'glove');
+    const deckContacts=state.world.contactmaterials.filter(item=>item.materials.some(material=>material.name==='deck'));
+    assert.equal(deckContacts.length,2);for(const contact of deckContacts)assert.equal(contact.friction,contact.materials.some(material=>material.name==='glove')?.03:.15);
+    assert.ok(actor.userData.deathStats.contactVertices>100);checkOffsets(actor);clearCharacterDeath(actor);assert.equal(state.world,null);assert.equal(state.handMaterial,null);
   }
 });
 
@@ -126,9 +131,27 @@ test('real SAS and Phoenix poses retain bone lengths and bounded biological join
     assert.ok(data.deathStats.maxJointGap<.03,JSON.stringify(detail));assert.ok(data.deathStats.maxBendViolation<.06,JSON.stringify(detail));assert.ok(data.deathStats.maxTwistViolation<.06,JSON.stringify(detail));assert.ok(data.deathStats.maxSwingViolation<.06,JSON.stringify(detail));
     assert.ok(size.y<1.05&&Math.max(size.x,size.z)>1.2,JSON.stringify({team,mode,direction,size:size.toArray()}));
     assert.ok(box.min.y>-.055&&box.min.y<.09,JSON.stringify({team,mode,direction,min:box.min.y}));
+    const head=point(actor,'head_0'),hip=point(actor,'pelvis');assert.ok(Math.abs(head.y-hip.y)/head.distanceTo(hip)<=.6,'The trunk drops rather than freezing in a supported sitting posture');
     assert.ok(extendedLowerBody({headAnkles:['L','R'].map(side=>point(actor,'ankle_'+side).distanceTo(point(actor,'head_0'))),legSpans:['L','R'].map(side=>point(actor,'leg_upper_'+side).distanceTo(point(actor,'ankle_'+side)))}),'At least one leg reaches away from the head or both hip-to-ankle chains retain broad spans');
     assert.equal(data.deathStats.frozen,true);assert.equal(data.deathStats.horizontalContacts,false);assert.equal(data.deathState.world,null);
   }
+});
+
+test('exact public seated support falls naturally and its former frozen upright pose remains a negative',async()=>{
+  const {actor,fixture}=await capturedCharacter('freight-death-seated-support.json'),data=actor.userData,initial=point(actor,'pelvis');
+  beginCharacterDeath(actor,fixture.initial.player,fixture.initial.ground);assert.ok(initial.distanceTo(point(actor,'pelvis'))<1e-4);
+  let maxGap=0,maxAngle=0;
+  for(let frame=0;frame<360;frame++){advanceCharacterDeath(actor,1/120);const stats=data.deathStats;maxGap=Math.max(maxGap,stats.maxJointGap);maxAngle=Math.max(maxAngle,stats.maxBendViolation,stats.maxTwistViolation,stats.maxSwingViolation);checkOffsets(actor);}
+  const geometry=corpseGeometry(actor),detail={geometry,maxGap,maxAngle,stats:data.deathStats};
+  assert.ok(maxGap<.055&&maxAngle<.2,JSON.stringify(detail));assert.ok(spreadGeometry(geometry),JSON.stringify(detail));
+  assert.ok(geometry.torsoVerticalRatio<.35,'The exact former supported sitting trunk is now near horizontal');
+  assert.ok(point(actor,'pelvis').distanceTo(initial)<1.5,'Natural collapse does not require a large displacement');
+  assert.ok(data.deathStats.maxJointGap<.03&&Math.max(data.deathStats.maxBendViolation,data.deathStats.maxTwistViolation,data.deathStats.maxSwingViolation)<.06);
+  assert.equal(data.deathStats.frozen,true);assert.equal(data.deathState.world,null);
+  for(const pose of fixture.supportedPose){const bone=data.bones[pose.name];bone.position.fromArray(pose.position);bone.quaternion.fromArray(pose.rotation);bone.scale.fromArray(pose.scale);}
+  actor.updateMatrixWorld(true);checkOffsets(actor);const sitting=corpseGeometry(actor);
+  assert.ok(sitting.headHip>.60&&sitting.torsoVerticalRatio>.95,'The genuine negative has intact bones but an upright supported trunk');
+  assert.equal(spreadGeometry(sitting),false,'A low pelvis or intact source proportions alone cannot validate a seated corpse');
 });
 
 test('running death phases allow a natural bent near leg while rejecting a bilateral curled-leg pile',async()=>{
@@ -193,6 +216,13 @@ test('captured natural double-bent knees stay spread while maximally curled legs
   assert.ok(curled.headHip>.60&&curled.legSpans.every(value=>value>.46),'The negative preserves real torso and limb lengths');
   assert.ok(curled.legSpans.every(value=>value<.60)&&curled.headAnkles.every(value=>value<.9),JSON.stringify(curled));
   assert.equal(extendedLowerBody(curled),false);assert.equal(spreadGeometry(curled),false);
+});
+
+test('captured side-running corpse keeps one long leg while its other knee bends naturally',async()=>{
+  const {actor}=await capturedCharacter('freight-death-extended-leg.json');checkOffsets(actor);const geometry=corpseGeometry(actor);
+  assert.ok(geometry.headAnkles.every(value=>value<.9)&&geometry.legSpans.some(value=>value<.60),'The exact native side-run pose reproduces both older distance gates');
+  assert.ok(Math.max(...geometry.legSpans)>.75&&Math.max(...geometry.headAnkles)>.8&&spreadGeometry(geometry),JSON.stringify(geometry));
+  assert.ok(geometry.headFootVertexDistances.every(value=>value>.4),'Both boot vertex sets remain away from the head in the captured complete mesh');
 });
 
 test('physics substeps preserve accumulated time across render phases and bound the complete corpse budget',async()=>{
@@ -268,10 +298,19 @@ test('invalid animation scales are restored and clearing an active corpse immedi
 test('shallow initial deck penetration and airborne momentum land without physics explosions',async()=>{
   for(const team of [0,1])for(const [offset,velocity]of [[-.055,[0,0,0]],[.65,[1,2.5,-.5]]]){
     const actor=await character(team),data=actor.userData;await animate(actor,'idle');actor.position.y=offset;data.lastLivingVelocity=velocity;
-    actor.updateMatrixWorld(true);const initialHip=point(actor,'pelvis').y;beginCharacterDeath(actor,{},0);let maxHip=initialHip,maxSpeed=0,maxGap=0;
+    actor.updateMatrixWorld(true);const initialHip=point(actor,'pelvis').y;beginCharacterDeath(actor,{},0);let maxHip=initialHip,maxSpeed=0,maxCoreSpeed=0,maxGap=0;
+    const state=data.deathState,bindings=[...state.bindings],world=state.world,bodies=[...state.bodies];
+    // Include angular kinetic energy in each body's principal-inertia frame.
+    // A light freely swinging hand can exceed 8 m/s without creating energy;
+    // core speed and energy growth distinguish that motion from an explosion.
+    const energy=()=>bodies.reduce((sum,body)=>{const spin=body.vectorToLocalFrame(body.angularVelocity),inertia=body.inertia;return sum+body.mass*9.81*body.position.y+.5*body.mass*body.velocity.lengthSquared()+.5*(inertia.x*spin.x*spin.x+inertia.y*spin.y*spin.y+inertia.z*spin.z*spin.z);},0);
+    const initialEnergy=energy();let maxEnergy=initialEnergy,energySamples=0;const step=world.step.bind(world);
+    world.step=(...args)=>{step(...args);energySamples++;maxEnergy=Math.max(maxEnergy,energy());for(const {bone,body}of bindings){assert.ok(Number.isFinite(body.velocity.length()));if(['pelvis','spine_0','head_0'].includes(bone.name))maxCoreSpeed=Math.max(maxCoreSpeed,body.velocity.length());}};
     for(let frame=0;frame<180;frame++){advanceCharacterDeath(actor,1/60);maxHip=Math.max(maxHip,point(actor,'pelvis').y);maxSpeed=Math.max(maxSpeed,data.deathStats.maxSpeed);maxGap=Math.max(maxGap,data.deathStats.maxJointGap);checkOffsets(actor);}
-    const detail={team,offset,maxHip,initialHip,maxSpeed,maxGap,stats:data.deathStats};
-    assert.ok(maxHip<initialHip+(offset<0?.15:.55),JSON.stringify(detail));assert.ok(maxSpeed<8,JSON.stringify(detail));assert.ok(maxGap<.09,JSON.stringify(detail));
+    const detail={team,offset,maxHip,initialHip,maxSpeed,maxCoreSpeed,maxGap,initialEnergy,maxEnergy,energySamples,stats:data.deathStats};
+    assert.ok(maxHip<initialHip+(offset<0?.15:.55),JSON.stringify(detail));assert.ok(maxGap<.09,JSON.stringify(detail));
+    if(offset<0)assert.ok(maxSpeed<8,JSON.stringify(detail));else{assert.ok(maxCoreSpeed<8,JSON.stringify(detail));assert.ok(maxEnergy<=initialEnergy*1.01,JSON.stringify(detail));assert.equal(energySamples,data.deathStats.physicsSteps);}
     assert.equal(data.deathStats.frozen,true);assert.equal(data.deathState.world,null);const box=bounds(actor);assert.ok(box.min.y>-.055&&box.min.y<.09,JSON.stringify({team,offset,bounds:box.min.toArray()}));
+    const geometry=corpseGeometry(actor);assert.ok(geometry.torsoVerticalRatio<=.6,JSON.stringify(geometry));
   }
 });

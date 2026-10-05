@@ -3,7 +3,7 @@ import * as CANNON from './vendor/cannon-es.js';
 
 // The rounded limb contacts need small steps at impact: 90 Hz lets contact
 // impulses overshoot cone/hinge limits even with extra solver iterations.
-const STEP=1/180,MAX_AGE=2.8,DEG=Math.PI/180,DECK_FRICTION=.15;
+const STEP=1/180,MAX_AGE=2.8,DEG=Math.PI/180,DECK_FRICTION=.15,HAND_FRICTION=.03;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 const cv=v=>new CANNON.Vec3(v.x,v.y,v.z);
 const cq=q=>new CANNON.Quaternion(q.x,q.y,q.z,q.w);
@@ -84,7 +84,7 @@ function release(state){
   for(const constraint of [...state.world.constraints])state.world.removeConstraint(constraint);
   for(const body of [...state.world.bodies])state.world.removeBody(body);
   state.world.contacts.length=0;state.world.frictionEquations.length=0;
-  state.world=null;state.material=null;state.neutral=null;state.player=null;state.bindings.length=0;state.joints.length=0;state.bodies.length=0;state.poses.length=0;
+  state.world=null;state.material=null;state.handMaterial=null;state.neutral=null;state.player=null;state.bindings.length=0;state.joints.length=0;state.bodies.length=0;state.poses.length=0;
 }
 
 function createBody(state,bone,end,mass,width,depth,{center,radius,halfHeight,axis}={}){
@@ -136,7 +136,7 @@ function hinge(state,a,b,pivot,maxAngle,fallbackAxis){
   state.world.addConstraint(constraint);state.joints.push({constraint,limit,kind:'hinge',angle:maxAngle*DEG,name:b.bone.name});
 }
 
-// Fit simple collider boxes once to the real visible, weighted vertices. Boots
+// Fit simple colliders once to the real visible, weighted vertices. Boots
 // include their toe bones and hands include the fingers; a sphere at the ankle
 // or wrist misses those extents and can leave 15 cm of visible mesh underground.
 // No skin vertices are sampled during the subsequent physics frames.
@@ -160,12 +160,16 @@ function fitShapes(group,state){
     const half=binding.bounds.getSize(new THREE.Vector3()).multiplyScalar(.5).addScalar(.008),center=binding.bounds.getCenter(new THREE.Vector3()).applyQuaternion(binding.orientation);
     half.x=Math.max(.025,half.x);half.y=Math.max(.03,half.y);half.z=Math.max(.025,half.z);
     binding.body.removeShape(binding.body.shapes[0]);
-    if(/^(arm_|leg_)/.test(binding.bone.name)){
+    const trunk=binding.bone.name==='pelvis'||binding.bone.name==='spine_0';
+    if(trunk||/^(arm_|leg_)/.test(binding.bone.name)){
       // Rounded limbs roll at the deck instead of stacking their flat box
-      // edges into a hand/knee support. Fit the capsule inside the measured
-      // limb extents; boots/hands and the padded trunk keep their fitted boxes.
-      const radius=Math.min(half.x,half.z,half.y),length=Math.max(.002,2*(half.y-radius)),end=new THREE.Vector3(0,length*.5,0).applyQuaternion(binding.orientation);
-      binding.body.addShape(new CANNON.Cylinder(radius,radius,length,8),cv(center),cq(binding.orientation));
+      // edges into a hand/knee support. A flat torso/hip box also forms an
+      // artificial sitting base. Round the trunk along its longest measured
+      // axis; the source proportions, body/joint count and mass stay unchanged.
+      const dimensions=[half.x,half.y,half.z],index=trunk?dimensions.indexOf(Math.max(...dimensions)):1;
+      const radius=Math.min(...dimensions),length=Math.max(.002,2*(dimensions[index]-radius)),axis=new THREE.Vector3().setComponent(index,1);
+      const orientation=binding.orientation.clone().multiply(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis)),end=new THREE.Vector3(0,length*.5,0).applyQuaternion(orientation);
+      binding.body.addShape(new CANNON.Cylinder(radius,radius,length,8),cv(center),cq(orientation));
       binding.body.addShape(new CANNON.Sphere(radius),cv(center.clone().add(end)));
       binding.body.addShape(new CANNON.Sphere(radius),cv(center.clone().sub(end)));
     }else binding.body.addShape(new CANNON.Box(cv(half)),cv(center),cq(binding.orientation));
@@ -182,7 +186,11 @@ function buildRig(group,state){
   // current curvature remain intact instead of stretching each bone to a body.
   const chest=createBody(state,bones.spine_0,bones.neck_0,26,.18,.17);
   const head=createBody(state,bones.head_0,null,5,0,0,{center:worldPoint(bones.head_0).addScaledVector(up,.045),radius:.13});
-  cone(state,pelvis,chest,chestBottom,neck.clone().sub(chestBottom).normalize(),45,25);
+  // Centre waist swing on the source anatomy, as for the hips below. A held
+  // running/aiming curve is a pose inside this cone, not a new zero direction
+  // that can trap an unconscious torso upright behind a planted hand.
+  const neutralWaist=state.neutral.waist.clone().applyQuaternion(state.neutral.pelvis.clone().invert()).applyQuaternion(worldQuaternion(bones.pelvis));
+  cone(state,pelvis,chest,chestBottom,neck.clone().sub(chestBottom).normalize(),45,25,neutralWaist);
   cone(state,chest,head,worldPoint(bones.head_0),up,32,28);
   for(const side of ['L','R']){
     const upperArm=createBody(state,bones['arm_upper_'+side],bones['arm_lower_'+side],2.2,.058,.061);
@@ -210,6 +218,7 @@ function buildRig(group,state){
   for(const {bone,body}of state.bindings){
     const leg=/^(leg_|ankle_)/.test(bone.name),arm=/^(arm_|hand_)/.test(bone.name);
     body.collisionFilterGroup=leg?4:arm?8:2;body.collisionFilterMask=leg||arm?3:13;
+    if(bone.name.startsWith('hand_'))body.material=state.handMaterial;
   }
   state.bindings.sort((a,b)=>a.depth-b.depth);
   const inherited=vector(group.userData.lastLivingVelocity,new THREE.Vector3(Number(state.player.vx)||0,Number(state.player.vy)||0,Number(state.player.vz)||0));
@@ -262,7 +271,7 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
   data.mixer.stopAllAction();data.currentAction='';data.upperMode=null;data.upperUntil=0;data.rawPose?.clear();
   for(const {bone,rest}of poses){bone.position.copy(rest.position);bone.quaternion.copy(rest.quaternion);bone.scale.copy(rest.scale);}
   group.updateMatrixWorld(true);
-  const neutral={pelvis:worldQuaternion(data.bones.pelvis),thigh:{}};
+  const neutral={pelvis:worldQuaternion(data.bones.pelvis),thigh:{},waist:worldPoint(data.bones.neck_0).sub(worldPoint(data.bones.spine_0)).normalize()};
   for(const side of ['L','R'])neutral.thigh[side]=worldPoint(data.bones['leg_lower_'+side]).sub(worldPoint(data.bones['leg_upper_'+side])).normalize();
   for(const pose of poses){pose.bone.quaternion.copy(pose.quaternion).normalize();pose.bone.position.copy(pose.bone.name==='pelvis'?pose.position:pose.rest.position);pose.bone.scale.copy(pose.rest.scale);}
   group.updateMatrixWorld(true);
@@ -273,8 +282,9 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
   const world=new CANNON.World({gravity:new CANNON.Vec3(0,-9.81,0),allowSleep:false});
   world.solver.iterations=24;world.solver.tolerance=1e-6;
   Object.assign(world.defaultContactMaterial,{friction:DECK_FRICTION,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4});
-  const material=new CANNON.Material('corpse'),floorMaterial=new CANNON.Material('deck');
+  const material=new CANNON.Material('corpse'),handMaterial=new CANNON.Material('glove'),floorMaterial=new CANNON.Material('deck');
   world.addContactMaterial(new CANNON.ContactMaterial(material,material,{friction:.08,restitution:0,contactEquationStiffness:5e4,contactEquationRelaxation:8,frictionEquationStiffness:5e4,frictionEquationRelaxation:8}));
+  for(const other of [material,handMaterial])world.addContactMaterial(new CANNON.ContactMaterial(handMaterial,other,{friction:.08,restitution:0,contactEquationStiffness:5e4,contactEquationRelaxation:8,frictionEquationStiffness:5e4,frictionEquationRelaxation:8}));
   // Slow positional correction for a boot initially a few centimetres below
   // the deck; a very hard correction injects upward velocity into the whole
   // linked corpse. Restitution stays zero and gravity remains fully physical.
@@ -283,9 +293,13 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
   // respawn budget expires. Let gravity collapse that support through actual
   // contact friction; bone poses and joint limits are never pulled toward a pose.
   world.addContactMaterial(new CANNON.ContactMaterial(material,floorMaterial,{friction:DECK_FRICTION,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
+  // An unpowered glove slides more freely than clothing/boots. Keeping its
+  // floor material distinct avoids a locked straight arm propping the trunk
+  // up, while the rest of the corpse retains deck friction and limited travel.
+  world.addContactMaterial(new CANNON.ContactMaterial(handMaterial,floorMaterial,{friction:HAND_FRICTION,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
   const plane=new CANNON.Body({mass:0,material:floorMaterial,shape:new CANNON.Plane(),position:new CANNON.Vec3(0,Number.isFinite(ground)?ground:0,0),collisionFilterGroup:1,collisionFilterMask:14});
   plane.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);world.addBody(plane);
-  const state={age:0,accumulator:0,frozen:false,world,material,poses,player,neutral,bodies:[],bindings:[],joints:[],ground:Number.isFinite(ground)?ground:0,
+  const state={age:0,accumulator:0,frozen:false,world,material,handMaterial,poses,player,neutral,bodies:[],bindings:[],joints:[],ground:Number.isFinite(ground)?ground:0,
     origin:group.position.clone(),yaw:group.rotation.y,steps:0,quietTime:0,contactPasses:0,groundContactCount:0,freezeReason:null};
   data.deathState=state;buildRig(group,state);data.visual.visible=true;if(data.gun)data.gun.visible=false;
   return advanceCharacterDeath(group,0);
