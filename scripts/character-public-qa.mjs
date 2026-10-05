@@ -32,6 +32,7 @@ const report={date:new Date().toISOString(),url:target.href,size,playSeconds,exp
     'Spread posture requires a head-to-far-ankle distance over 0.9m OR both hip-to-ankle leg spans over 0.60m OR a maximum leg span over 0.75m together with a far-ankle distance over 0.8m. All three paths additionally require the unchanged torso, minimum leg reach, bounds, ground, bone and joint checks.',
     'A frozen torso additionally requires abs(headY-pelvisY)/head-to-pelvis distance <=0.6; this rejects upright support even when total mesh height is under 1.05m.',
     'Live material and waist checks read actual Cannon bodies, contact materials and constraint equations. A support-release proof reports prior physical contacts; it is compared with live state when observable, not treated as a replacement for that state.',
+    'Fitted boot checks read the actual low-point ConvexPolyhedra and their independent boot material. Their saved source envelope is reconstructed only once per observed death from existing weighted samples; the QA never updates live bones or skeletons for that measurement.',
     'A release that occurs inside the same render advance as whole-world freezing can have no observable live released world. Such a trigger is explicitly marked unobserved-active-state rather than claimed as a measured material transition.',
     'Camera aim and NDC checks establish direction and frustum membership, not lack of occlusion. Actual death-camera PNGs require a separate visual check that the corpse is visible.',
     'Physics cost records the naturally observed concurrent corpses, not a synthetic simultaneous-death benchmark.',
@@ -61,9 +62,14 @@ async function fastFrozenPair(key){
       const waist=state.joints.find(joint=>joint.name==='spine_0'),slide=state.supportSlide;
       const bodyName=body=>state.bindings.find(binding=>binding.body===body)?.bone.name||(body.mass===0?'ground':'unknown');
       return {worldPresent:state.world!==null,worldTime:state.world?.time??null,supportSlidePresent:slide!=null,
-        materialPresent:state.material!=null,handMaterialPresent:state.handMaterial!=null,
+        materialPresent:state.material!=null,handMaterialPresent:state.handMaterial!=null,bootMaterialPresent:state.bootMaterial!=null,
         supportSlide:slide?{released:slide.released,releaseAge:slide.releaseAge,hold:slide.hold,tiltRate:slide.tiltRate??null,proof:slide.proof?{...slide.proof}:null}:null,
         bodyMaterials:state.bindings.map(({bone,body})=>({name:bone.name,material:material(body.material),shapeMaterials:body.shapes.map(shape=>material(shape.material))})),
+        bootShapes:state.bindings.filter(({bone})=>/^ankle_[LR]$/.test(bone.name)).map(({bone,body})=>({name:bone.name,count:body.shapes.length,type:body.shapes[0]?.type??null,
+          vertexCount:body.shapes[0]?.vertices?.length||0,faceCount:body.shapes[0]?.faces?.length||0,
+          finiteVertices:(body.shapes[0]?.vertices||[]).every(v=>[v.x,v.y,v.z].every(Number.isFinite)),
+          validFaces:(body.shapes[0]?.faces||[]).every(face=>face.length>=3&&face.every(i=>Number.isInteger(i)&&i>=0&&i<(body.shapes[0]?.vertices?.length||0))),
+          finiteNormals:(body.shapes[0]?.faceNormals||[]).length===(body.shapes[0]?.faces||[]).length&&(body.shapes[0]?.faceNormals||[]).every(v=>[v.x,v.y,v.z].every(Number.isFinite)&&Math.hypot(v.x,v.y,v.z)>.99)})),
         groundMaterials:(state.world?.bodies||[]).filter(body=>body.mass===0).map(body=>({material:material(body.material),shapeMaterials:body.shapes.map(shape=>material(shape.material))})),
         contactMaterials:(state.world?.contactmaterials||[]).map(contact),defaultContactMaterial:state.world?contact(state.world.defaultContactMaterial):null,
         contacts:(state.world?.contacts||[]).map(c=>({a:bodyName(c.bi),b:bodyName(c.bj),multiplier:c.multiplier})),
@@ -160,9 +166,14 @@ async function observe(){const sample=await page.evaluate(({alreadyMeasured,know
       const waist=state.joints.find(joint=>joint.name==='spine_0'),slide=state.supportSlide;
       const bodyName=body=>state.bindings.find(binding=>binding.body===body)?.bone.name||(body.mass===0?'ground':'unknown');
       return {worldPresent:state.world!==null,worldTime:state.world?.time??null,supportSlidePresent:slide!=null,
-        materialPresent:state.material!=null,handMaterialPresent:state.handMaterial!=null,
+        materialPresent:state.material!=null,handMaterialPresent:state.handMaterial!=null,bootMaterialPresent:state.bootMaterial!=null,
         supportSlide:slide?{released:slide.released,releaseAge:slide.releaseAge,hold:slide.hold,tiltRate:slide.tiltRate??null,proof:slide.proof?{...slide.proof}:null}:null,
         bodyMaterials:state.bindings.map(({bone,body})=>({name:bone.name,material:material(body.material),shapeMaterials:body.shapes.map(shape=>material(shape.material))})),
+        bootShapes:state.bindings.filter(({bone})=>/^ankle_[LR]$/.test(bone.name)).map(({bone,body})=>({name:bone.name,count:body.shapes.length,type:body.shapes[0]?.type??null,
+          vertexCount:body.shapes[0]?.vertices?.length||0,faceCount:body.shapes[0]?.faces?.length||0,
+          finiteVertices:(body.shapes[0]?.vertices||[]).every(v=>[v.x,v.y,v.z].every(Number.isFinite)),
+          validFaces:(body.shapes[0]?.faces||[]).every(face=>face.length>=3&&face.every(i=>Number.isInteger(i)&&i>=0&&i<(body.shapes[0]?.vertices?.length||0))),
+          finiteNormals:(body.shapes[0]?.faceNormals||[]).length===(body.shapes[0]?.faces||[]).length&&(body.shapes[0]?.faceNormals||[]).every(v=>[v.x,v.y,v.z].every(Number.isFinite)&&Math.hypot(v.x,v.y,v.z)>.99)})),
         groundMaterials:(state.world?.bodies||[]).filter(body=>body.mass===0).map(body=>({material:material(body.material),shapeMaterials:body.shapes.map(shape=>material(shape.material))})),
         contactMaterials:(state.world?.contactmaterials||[]).map(contact),defaultContactMaterial:state.world?contact(state.world.defaultContactMaterial):null,
         contacts:(state.world?.contacts||[]).map(c=>({a:bodyName(c.bi),b:bodyName(c.bj),multiplier:c.multiplier})),
@@ -184,6 +195,43 @@ async function observe(){const sample=await page.evaluate(({alreadyMeasured,know
     const swing=Math.acos(Math.max(-1,Math.min(1,dot(xyz(a.vectorToWorldFrame(constraint.axisA)),xyz(b.vectorToWorldFrame(constraint.axisB))))));
     return {name,kind,gap,swing,maxSwing:angle};
   });
+
+  // Reconstruct only the existing sparse boot fitting samples in private
+  // matrices from the captured source pose. No live bone/skeleton is updated.
+  // This runs once per observed death, not every frame or over the whole mesh.
+  const sourceBootFit=(data,state)=>{
+    if(!state?.world)return null;
+    const poses=new Map(state.poses.map(pose=>[pose.bone,pose])),matrices=new Map();
+    const originalMatrix=bone=>{
+      if(matrices.has(bone))return matrices.get(bone);
+      const pose=poses.get(bone);if(!pose)return bone.matrixWorld.clone();
+      const local=bone.matrixWorld.clone().compose(bone.name==='pelvis'?pose.position:pose.rest.position,pose.quaternion,pose.rest.scale),parent=originalMatrix(bone.parent);
+      const matrix=parent.clone().multiply(local);matrices.set(bone,matrix);return matrix;
+    };
+    const boots=new Map(state.bindings.filter(({bone})=>/^ankle_[LR]$/.test(bone.name)).map(binding=>{
+      const position=binding.bone.position.clone(),rotation=binding.bone.quaternion.clone(),scale=binding.bone.scale.clone();originalMatrix(binding.bone).decompose(position,rotation,scale);
+      position.add(binding.offset.clone().applyQuaternion(rotation));
+      return [binding.bone,{binding,position,inverse:rotation.invert(),min:[Infinity,Infinity,Infinity],max:[-Infinity,-Infinity,-Infinity],sampleCount:0}];
+    }));
+    for(const {mesh,indices}of data.contactSamples||[]){
+      const positions=mesh.geometry.getAttribute('position'),joints=mesh.geometry.getAttribute('skinIndex'),weights=mesh.geometry.getAttribute('skinWeight');if(!joints||!weights)continue;
+      for(const index of indices){
+        let strongest=0;for(let k=1;k<4;k++)if(weights.getComponent(index,k)>weights.getComponent(index,strongest))strongest=k;
+        let bone=mesh.skeleton.bones[joints.getComponent(index,strongest)];while(bone?.isBone&&!boots.has(bone))bone=bone.parent;const boot=boots.get(bone);if(!boot)continue;
+        const base=mesh.position.clone().fromBufferAttribute(positions,index).applyMatrix4(mesh.bindMatrix),point=mesh.position.clone().set(0,0,0);
+        for(let k=0;k<4;k++){const weight=weights.getComponent(index,k);if(!weight)continue;const joint=joints.getComponent(index,k),matrix=originalMatrix(mesh.skeleton.bones[joint]).clone().multiply(mesh.skeleton.boneInverses[joint]);point.addScaledVector(base.clone().applyMatrix4(matrix),weight);}
+        point.applyMatrix4(mesh.bindMatrixInverse).applyMatrix4(mesh.matrixWorld).sub(boot.position).applyQuaternion(boot.inverse);
+        for(let k=0;k<3;k++){boot.min[k]=Math.min(boot.min[k],point.getComponent(k));boot.max[k]=Math.max(boot.max[k],point.getComponent(k));}boot.sampleCount++;
+      }
+    }
+    return [...boots.values()].map(({binding,min,max,sampleCount})=>{
+      const body=binding.body,shape=body.shapes[0],proxyMin=[Infinity,Infinity,Infinity],proxyMax=[-Infinity,-Infinity,-Infinity],q=body.shapeOrientations[0],offset=body.shapeOffsets[0],orientation=binding.bone.quaternion.clone().set(q.x,q.y,q.z,q.w);
+      for(const vertex of shape.vertices||[]){const point=binding.bone.position.clone().set(vertex.x,vertex.y,vertex.z).applyQuaternion(orientation).add(binding.bone.position.clone().set(offset.x,offset.y,offset.z));for(let k=0;k<3;k++){proxyMin[k]=Math.min(proxyMin[k],point.getComponent(k));proxyMax[k]=Math.max(proxyMax[k],point.getComponent(k));}}
+      return {name:binding.bone.name,sampleCount,sourceMin:min,sourceMax:max,proxyMin,proxyMax,minDelta:proxyMin.map((value,k)=>value-min[k]),maxDelta:proxyMax.map((value,k)=>value-max[k]),
+        method:'Actual convex body-local vertices compared with existing weighted contact samples reconstructed from the captured source pose in private matrices; 8mm radial skin.'};
+    });
+  };
+
   const actors=f.snapshot.players.map(p=>{
     const group=f.view.players.get(p.id)?.group,d=group?.userData;if(!d)return {id:p.id,missing:true};
     const key=p.id+'/'+p.deaths,head=world(d.bones.head_0),pelvis=world(d.bones.pelvis);
@@ -195,7 +243,7 @@ async function observe(){const sample=await page.evaluate(({alreadyMeasured,know
     });
     const scales=Object.values(d.bones).flatMap(bone=>bone.scale.toArray());
     const state=d.deathState,death=d.deathStats?structuredClone(d.deathStats):null;
-    const physics=state?{supportMaterials:snapshotSupport(state),worldPresent:state.world!==null,bodies:state.bodies.length,bindings:state.bindings.length,joints:state.joints.length,poses:state.poses.length,
+    const physics=state?{supportMaterials:snapshotSupport(state),bootSourceFit:state.world&&!knownDeaths.includes(key)?sourceBootFit(d,state):null,worldPresent:state.world!==null,bodies:state.bodies.length,bindings:state.bindings.length,joints:state.joints.length,poses:state.poses.length,
       worldBodies:state.world?.bodies.length||0,worldConstraints:state.world?.constraints.length||0,worldDt:state.world?.dt??null,worldAllowSleep:state.world?.allowSleep??null,solverIterations:state.world?.solver.iterations??null,bodyAllowSleep:state.bodies.map(body=>body.allowSleep),
       bodiesMeasured:state.bindings.map(({bone,body,offset})=>({name:bone.name,position:[body.position.x,body.position.y,body.position.z],rotation:[body.quaternion.x,body.quaternion.y,body.quaternion.z,body.quaternion.w],
         velocity:[body.velocity.x,body.velocity.y,body.velocity.z],angularVelocity:[body.angularVelocity.x,body.angularVelocity.y,body.angularVelocity.z],offset:offset.toArray(),
@@ -308,12 +356,12 @@ function inspectSupportEvidence(record,d,evidence,observedAt){
   // Preserve the raw values before assertions so a failure can be reconstructed.
   record.lastSupportReading=reading;
   const proof=validateSupportProof(d);
-  if(history.firstReleased)assert.equal(d.supportedClothSlip,true,'An observed release never reverts before respawn');
+  if(history.triggered)assert.equal(d.supportedClothSlip,true,'A reported release never reverts before respawn, including an initially frozen observation');
   if(d.frozen){
     assert.equal(evidence.worldPresent,false);assert.equal(evidence.supportSlidePresent,false,'Freeze clears support state and all its body references');
-    assert.equal(evidence.supportSlide,null);assert.equal(evidence.materialPresent,false);assert.equal(evidence.handMaterialPresent,false);
+    assert.equal(evidence.supportSlide,null);assert.equal(evidence.materialPresent,false);assert.equal(evidence.handMaterialPresent,false);assert.equal(evidence.bootMaterialPresent,false,'Freeze clears the fitted boot material');
     assert.equal(evidence.defaultContactMaterial,null);assert.equal(evidence.waist,null);
-    for(const key of ['bodyMaterials','groundMaterials','contactMaterials','contacts'])assert.deepEqual(evidence[key],[],'Freeze clears real '+key);
+    for(const key of ['bodyMaterials','bootShapes','groundMaterials','contactMaterials','contacts'])assert.deepEqual(evidence[key],[],'Freeze clears real '+key);
     history.frozenSamples++;
     if(proof){
       history.triggered=true;history.triggerProof=structuredClone(proof);
@@ -322,7 +370,7 @@ function inspectSupportEvidence(record,d,evidence,observedAt){
     }
     return;
   }
-  assert.equal(evidence.worldPresent,true);assert.equal(evidence.materialPresent,true);assert.equal(evidence.handMaterialPresent,true);
+  assert.equal(evidence.worldPresent,true);assert.equal(evidence.materialPresent,true);assert.equal(evidence.handMaterialPresent,true);assert.equal(evidence.bootMaterialPresent,true);
   assert(Number.isFinite(evidence.worldTime)&&evidence.worldTime>=0&&Math.abs(evidence.worldTime-d.physicsSteps*thresholds.physicsStepSeconds)<1e-6,'Material read belongs to the actual stepped world');
   const slide=evidence.supportSlide;
   if(proof){
@@ -335,11 +383,14 @@ function inspectSupportEvidence(record,d,evidence,observedAt){
     if(ids.has(name))assert.equal(m.id,ids.get(name),'All bodies and contact pairs share the actual '+name+' material');else ids.set(name,m.id);
   };
   assert.equal(evidence.bodyMaterials.length,15);
-  for(const body of evidence.bodyMaterials){assertMaterial(body.material,/^hand_[LR]$/.test(body.name)?'glove':'corpse');assert(body.shapeMaterials.length>0&&body.shapeMaterials.every(m=>m===null),'Shapes do not override actual body materials');}
+  for(const body of evidence.bodyMaterials){assertMaterial(body.material,/^hand_[LR]$/.test(body.name)?'glove':/^ankle_[LR]$/.test(body.name)?'boot':'corpse');assert(body.shapeMaterials.length>0&&body.shapeMaterials.every(m=>m===null),'Shapes do not override actual body materials');}
   assert.equal(evidence.groundMaterials.length,1);assertMaterial(evidence.groundMaterials[0].material,'deck');assert.deepEqual(evidence.groundMaterials[0].shapeMaterials,[null]);
-  assert.equal(ids.size,3);assert.equal(new Set(ids.values()).size,3,'Corpse, glove and deck materials are distinct');
-  const expectedPairs={'corpse|corpse':proof?0:.08,'corpse|glove':proof?0:.08,'glove|glove':proof?0:.08,'corpse|deck':.15,'deck|glove':proof?0:.03},seen=new Set();
-  assert.equal(evidence.contactMaterials.length,5);
+  assert.equal(ids.size,4);assert.equal(new Set(ids.values()).size,4,'Corpse, glove, fitted boot and deck materials are distinct');
+  assert.deepEqual(evidence.bootShapes.map(boot=>boot.name).sort(),['ankle_L','ankle_R']);
+  for(const boot of evidence.bootShapes){assert.equal(boot.count,1);assert.equal(boot.type,16,'The actual boot proxy is a ConvexPolyhedron');assert(boot.vertexCount>=4&&boot.vertexCount<=40&&boot.faceCount>=4&&boot.finiteVertices&&boot.validFaces&&boot.finiteNormals,'The low-point boot hull has finite vertices, normals and valid faces');}
+  const selfFriction=proof?0:.08,expectedPairs={'corpse|corpse':selfFriction,'corpse|glove':selfFriction,'glove|glove':selfFriction,
+    'boot|corpse':selfFriction,'boot|glove':selfFriction,'boot|boot':selfFriction,'corpse|deck':.15,'deck|glove':proof?0:.03,'boot|deck':.02},seen=new Set();
+  assert.equal(evidence.contactMaterials.length,9);
   const validateNormal=(cm,deck)=>{
     assert.equal(cm.restitution,0);assert.equal(cm.normalStiffness,deck?2e7:5e4);assert.equal(cm.normalRelaxation,deck?12:8);
     assert.equal(cm.frictionStiffness,deck?2e7:5e4);assert.equal(cm.frictionRelaxation,deck?4:8);
@@ -391,6 +442,14 @@ function inspectDeath(actor,sample){
   // is diagnostic evidence for a separate scene, never a write to the match.
   if(actor.skinBounds){record.frozenPose={bones:actor.allBones,skinBounds:actor.skinBounds,footGeometry:actor.footGeometry,headPelvis:actor.headPelvis,torsoVerticalRatio:actor.torsoVerticalRatio,headAnkles:actor.headAnkles,legSpans:actor.legSpans,physics:actor.physics,death:actor.death};}
   inspectSupportEvidence(record,d,physics.supportMaterials,{time:sample.time,method:'full read-only actor observation'});
+  if(physics.bootSourceFit){
+    record.bootSourceFit=physics.bootSourceFit;
+    assert.deepEqual(physics.bootSourceFit.map(boot=>boot.name).sort(),['ankle_L','ankle_R']);
+    for(const boot of physics.bootSourceFit){
+      assert(boot.sampleCount>=4&&[boot.sourceMin,boot.sourceMax,boot.proxyMin,boot.proxyMax,boot.minDelta,boot.maxDelta].every(finite),'Read finite source and actual fitted convex boot envelopes');
+      assert(boot.minDelta.every(value=>value>=-.0081&&value<=.0001)&&boot.maxDelta.every(value=>value>=-.0001&&value<=.0081),'Actual boot hull follows the saved weighted source envelope with only its 8mm radial skin');
+    }
+  }
   if(!d.frozen){
     assert.equal(physics.worldPresent,true);assert.equal(physics.bodies,15);assert.equal(physics.bindings,15);assert.equal(physics.joints,14);
     if(d.physicsSteps>0)assert(Math.abs(physics.worldDt-d.physicsStepSeconds)<1e-12,'Actual Cannon world dt matches reported fixed step after a physical step');
@@ -528,10 +587,11 @@ try{
   check('At least two natural deaths freeze, release physics and respawn',complete.length>=2,{completeDeaths:complete.map(record=>record.key),observedDeaths:deathRecords.size});
   check('Two actual player cameras show physical falls followed by verified freeze and natural respawn',locals.length>=2,{localDeaths:locals.map(record=>({key:record.key,cameraScreenshot:record.cameraScreenshot,frozenStableSamples:record.stableSamples,frozenScreenshot:record.frozenScreenshot||null,respawnScreenshot:record.respawnScreenshot}))});
   const supportEvidence=[...deathRecords.values()].map(record=>({key:record.key,...record.supportMaterialEvidence}));
-  report.supportMaterialSummary={activeSamples:supportEvidence.reduce((sum,item)=>sum+item.activeSamples,0),releasedSamples:supportEvidence.reduce((sum,item)=>sum+item.releasedSamples,0),
+  report.supportMaterialSummary={sourceFittedDeaths:[...deathRecords.values()].filter(record=>record.bootSourceFit).map(record=>record.key),activeSamples:supportEvidence.reduce((sum,item)=>sum+item.activeSamples,0),releasedSamples:supportEvidence.reduce((sum,item)=>sum+item.releasedSamples,0),
     triggered:supportEvidence.filter(item=>item.triggered).map(item=>({key:item.key,observation:item.triggerObservation,proof:item.triggerProof})),
     unobservedActiveTriggers:supportEvidence.filter(item=>item.triggerObservation==='unobserved-active-state').map(item=>item.key)};
   check('Observed live Cannon materials and waist equations match their measured support state',report.supportMaterialSummary.activeSamples>0,report.supportMaterialSummary);
+  check('Both actual player deaths retain source-fitted convex boot evidence',locals.every(record=>record.bootSourceFit?.length===2),locals.map(record=>({key:record.key,bootSourceFit:record.bootSourceFit||null})));
   report.cost={peakActiveWorlds,peakBodies,peakConstraints,peakFrozenCorpses,playerCount:size*2};
   check('Observed physics resources remain bounded and frozen worlds are released',true,report.cost);await shot('04-match-final');
   check('No public runtime or asset request errors',!report.errors.length&&!report.failedRequests.length,{errors:report.errors,failedRequests:report.failedRequests,playMs:report.playMs});report.ok=true;

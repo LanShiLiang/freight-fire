@@ -84,7 +84,7 @@ function release(state){
   for(const constraint of [...state.world.constraints])state.world.removeConstraint(constraint);
   for(const body of [...state.world.bodies])state.world.removeBody(body);
   state.world.contacts.length=0;state.world.frictionEquations.length=0;
-  state.world=null;state.supportSlide=null;state.material=null;state.handMaterial=null;state.neutral=null;state.player=null;state.bindings.length=0;state.joints.length=0;state.bodies.length=0;state.poses.length=0;
+  state.world=null;state.supportSlide=null;state.material=null;state.handMaterial=null;state.bootMaterial=null;state.neutral=null;state.player=null;state.bindings.length=0;state.joints.length=0;state.bodies.length=0;state.poses.length=0;
 }
 
 function createBody(state,bone,end,mass,width,depth,{center,radius,halfHeight,axis}={}){
@@ -140,10 +140,42 @@ function hinge(state,a,b,pivot,maxAngle,fallbackAxis){
 // include their toe bones and hands include the fingers; a sphere at the ankle
 // or wrist misses those extents and can leave 15 cm of visible mesh underground.
 // No skin vertices are sampled during the subsequent physics frames.
+
+// A tiny incremental hull of the existing real weighted boot samples. This
+// removes the oriented box's empty corner that was 15 cm under the deck.
+function fittedBootHull(points,padding){
+  const center=new THREE.Box3().setFromPoints(points).getCenter(new THREE.Vector3()),vertices=[];
+  for(const source of points){const point=source.clone().sub(center);if(padding&&point.length()>1e-5)point.addScaledVector(point.clone().normalize(),padding);if(!vertices.some(v=>v.distanceToSquared(point)<1e-10))vertices.push(point);}
+  if(vertices.length<4)return null;
+  let a=0,b=1,c=-1,d=-1,max=0;
+  for(let i=1;i<vertices.length;i++){const distance=vertices[a].distanceToSquared(vertices[i]);if(distance>max){max=distance;b=i;}}
+  const line=vertices[b].clone().sub(vertices[a]),normal=new THREE.Vector3();max=0;
+  for(let i=0;i<vertices.length;i++){normal.crossVectors(line,vertices[i].clone().sub(vertices[a]));const distance=normal.lengthSq();if(distance>max){max=distance;c=i;}}
+  if(c<0||max<1e-12)return null;
+  normal.crossVectors(line,vertices[c].clone().sub(vertices[a])).normalize();max=0;
+  for(let i=0;i<vertices.length;i++){const distance=Math.abs(normal.dot(vertices[i].clone().sub(vertices[a])));if(distance>max){max=distance;d=i;}}
+  if(d<0||max<1e-6)return null;
+  const inside=vertices[a].clone().add(vertices[b]).add(vertices[c]).add(vertices[d]).multiplyScalar(.25);
+  const face=(a,b,c)=>{const n=new THREE.Vector3().crossVectors(vertices[b].clone().sub(vertices[a]),vertices[c].clone().sub(vertices[a])).normalize();if(n.dot(inside.clone().sub(vertices[a]))>0){[b,c]=[c,b];n.negate();}return {indices:[a,b,c],normal:n,plane:n.dot(vertices[a])};};
+  let faces=[face(a,b,c),face(a,d,b),face(a,c,d),face(b,d,c)];
+  for(let i=0;i<vertices.length;i++){
+    const visible=faces.filter(f=>f.normal.dot(vertices[i])-f.plane>1e-7);if(!visible.length)continue;
+    const edges=new Map();for(const f of visible)for(let e=0;e<3;e++){const a=f.indices[e],b=f.indices[(e+1)%3],key=Math.min(a,b)+','+Math.max(a,b);if(edges.has(key))edges.delete(key);else edges.set(key,[a,b]);}
+    faces=faces.filter(f=>!visible.includes(f));for(const [a,b]of edges.values())faces.push(face(a,b,i));
+  }
+  // Preserve convex planar sole/heel faces as polygons rather than feeding
+  // Cannon many co-planar triangles and duplicate deck-contact edges.
+  const groups=[];for(const f of faces){let group=groups.find(g=>g.normal.dot(f.normal)>1-1e-6&&Math.abs(g.plane-f.plane)<1e-6);if(!group){group={normal:f.normal,plane:f.plane,faces:[]};groups.push(group);}group.faces.push(f);}
+  const polygons=groups.map(group=>{const edges=new Map();for(const f of group.faces)for(let e=0;e<3;e++){const a=f.indices[e],b=f.indices[(e+1)%3],key=Math.min(a,b)+','+Math.max(a,b);if(edges.has(key))edges.delete(key);else edges.set(key,[a,b]);}const boundary=[...edges.values()],polygon=[boundary[0][0]];let current=boundary[0][1];while(current!==polygon[0]&&polygon.length<=boundary.length){polygon.push(current);const next=boundary.find(e=>e[0]===current);if(!next)return group.faces.map(f=>f.indices);current=next[1];}return [polygon];}).flat();
+  const used=[...new Set(polygons.flat())],remap=new Map(used.map((old,index)=>[old,index]));
+  const shape=new CANNON.ConvexPolyhedron({vertices:used.map(index=>cv(vertices[index])),faces:polygons.map(f=>f.map(index=>remap.get(index)))});
+  return {shape,center};
+}
+
 function fitShapes(group,state){
   const data=group.userData,byBone=new Map(state.bindings.map(binding=>[binding.bone,binding])),owner=new Map();
   for(const bone of Object.values(data.bones)){let current=bone;while(current&&!byBone.has(current))current=current.parent;owner.set(bone,byBone.get(current));}
-  for(const binding of state.bindings){binding.bounds=new THREE.Box3();binding.inverseBody=worldQuaternion(binding.bone).invert();binding.inverseShape=binding.orientation.clone().invert();}
+  for(const binding of state.bindings){binding.bounds=new THREE.Box3();binding.hullPoints=/^ankle_/.test(binding.bone.name)?[]:null;binding.inverseBody=worldQuaternion(binding.bone).invert();binding.inverseShape=binding.orientation.clone().invert();}
   const point=new THREE.Vector3();let vertices=0;
   for(const {mesh,indices}of data.contactSamples||[]){
     mesh.skeleton?.update();const joints=mesh.geometry.getAttribute('skinIndex'),weights=mesh.geometry.getAttribute('skinWeight');
@@ -152,7 +184,7 @@ function fitShapes(group,state){
       let strongest=0;for(let i=1;i<4;i++)if(weights.getComponent(index,i)>weights.getComponent(index,strongest))strongest=i;
       const binding=owner.get(mesh.skeleton.bones[joints.getComponent(index,strongest)]);if(!binding)continue;
       mesh.getVertexPosition(index,point).applyMatrix4(mesh.matrixWorld).sub(tv(binding.body.position)).applyQuaternion(binding.inverseBody).applyQuaternion(binding.inverseShape);
-      binding.bounds.expandByPoint(point);vertices++;
+      binding.bounds.expandByPoint(point);binding.hullPoints?.push(point.clone());vertices++;
     }
   }
   for(const binding of state.bindings){
@@ -161,7 +193,9 @@ function fitShapes(group,state){
     half.x=Math.max(.025,half.x);half.y=Math.max(.03,half.y);half.z=Math.max(.025,half.z);
     binding.body.removeShape(binding.body.shapes[0]);
     const trunk=binding.bone.name==='pelvis'||binding.bone.name==='spine_0';
-    if(trunk||/^(arm_|leg_)/.test(binding.bone.name)){
+    const hull=binding.hullPoints?fittedBootHull(binding.hullPoints,0.008):null;
+    if(hull){binding.body.addShape(hull.shape,cv(hull.center.applyQuaternion(binding.orientation)),cq(binding.orientation));}
+    else if(trunk||/^(arm_|leg_)/.test(binding.bone.name)){
       // Rounded limbs roll at the deck instead of stacking their flat box
       // edges into a hand/knee support. A flat torso/hip box also forms an
       // artificial sitting base. Round the trunk along its longest measured
@@ -173,7 +207,7 @@ function fitShapes(group,state){
       binding.body.addShape(new CANNON.Sphere(radius),cv(center.clone().add(end)));
       binding.body.addShape(new CANNON.Sphere(radius),cv(center.clone().sub(end)));
     }else binding.body.addShape(new CANNON.Box(cv(half)),cv(center),cq(binding.orientation));
-    delete binding.bounds;delete binding.inverseBody;delete binding.inverseShape;
+    delete binding.bounds;delete binding.hullPoints;delete binding.inverseBody;delete binding.inverseShape;
   }
   state.contactVertices=vertices;
 }
@@ -218,7 +252,7 @@ function buildRig(group,state){
   for(const {bone,body}of state.bindings){
     const leg=/^(leg_|ankle_)/.test(bone.name),arm=/^(arm_|hand_)/.test(bone.name);
     body.collisionFilterGroup=leg?4:arm?8:2;body.collisionFilterMask=leg||arm?3:13;
-    if(bone.name.startsWith('hand_'))body.material=state.handMaterial;
+    if(bone.name.startsWith('hand_'))body.material=state.handMaterial;if(bone.name.startsWith('ankle_'))body.material=state.bootMaterial;
   }
   state.bindings.sort((a,b)=>a.depth-b.depth);
   const inherited=vector(group.userData.lastLivingVelocity,new THREE.Vector3(Number(state.player.vx)||0,Number(state.player.vy)||0,Number(state.player.vz)||0));
@@ -282,7 +316,7 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
   const world=new CANNON.World({gravity:new CANNON.Vec3(0,-9.81,0),allowSleep:false});
   world.solver.iterations=24;world.solver.tolerance=1e-6;
   Object.assign(world.defaultContactMaterial,{friction:DECK_FRICTION,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4});
-  const material=new CANNON.Material('corpse'),handMaterial=new CANNON.Material('glove'),floorMaterial=new CANNON.Material('deck');
+  const material=new CANNON.Material('corpse'),handMaterial=new CANNON.Material('glove'),floorMaterial=new CANNON.Material('deck'),bootMaterial=new CANNON.Material('boot');
   world.addContactMaterial(new CANNON.ContactMaterial(material,material,{friction:.08,restitution:0,contactEquationStiffness:5e4,contactEquationRelaxation:8,frictionEquationStiffness:5e4,frictionEquationRelaxation:8}));
   for(const other of [material,handMaterial])world.addContactMaterial(new CANNON.ContactMaterial(handMaterial,other,{friction:.08,restitution:0,contactEquationStiffness:5e4,contactEquationRelaxation:8,frictionEquationStiffness:5e4,frictionEquationRelaxation:8}));
   // Slow positional correction for a boot initially a few centimetres below
@@ -293,13 +327,18 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
   // respawn budget expires. Let gravity collapse that support through actual
   // contact friction; bone poses and joint limits are never pulled toward a pose.
   world.addContactMaterial(new CANNON.ContactMaterial(material,floorMaterial,{friction:DECK_FRICTION,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
-  // An unpowered glove slides more freely than clothing/boots. Keeping its
+  // An unpowered glove slides more freely than clothing. Keeping its
   // floor material distinct avoids a locked straight arm propping the trunk
   // up, while the rest of the corpse retains deck friction and limited travel.
   world.addContactMaterial(new CANNON.ContactMaterial(handMaterial,floorMaterial,{friction:HAND_FRICTION,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
+  // Real fitted boot hulls retain their sole/heel/toe envelope without the
+  // old box's empty underground corners. Their separate .02 deck friction
+  // lets a bent shoe slide while cloth keeps .15 and normal contacts stay firm.
+  for(const other of [material,handMaterial,bootMaterial])world.addContactMaterial(new CANNON.ContactMaterial(bootMaterial,other,{friction:.08,restitution:0,contactEquationStiffness:5e4,contactEquationRelaxation:8,frictionEquationStiffness:5e4,frictionEquationRelaxation:8}));
+  world.addContactMaterial(new CANNON.ContactMaterial(bootMaterial,floorMaterial,{friction:0.02,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
   const plane=new CANNON.Body({mass:0,material:floorMaterial,shape:new CANNON.Plane(),position:new CANNON.Vec3(0,Number.isFinite(ground)?ground:0,0),collisionFilterGroup:1,collisionFilterMask:14});
   plane.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);world.addBody(plane);
-  const state={age:0,accumulator:0,frozen:false,world,material,handMaterial,poses,player,neutral,bodies:[],bindings:[],joints:[],ground:Number.isFinite(ground)?ground:0,
+  const state={age:0,accumulator:0,frozen:false,world,material,handMaterial,bootMaterial,poses,player,neutral,bodies:[],bindings:[],joints:[],ground:Number.isFinite(ground)?ground:0,
     origin:group.position.clone(),yaw:group.rotation.y,steps:0,quietTime:0,contactPasses:0,groundContactCount:0,freezeReason:null};
   data.deathState=state;buildRig(group,state);data.visual.visible=true;if(data.gun)data.gun.visible=false;
   return advanceCharacterDeath(group,0);

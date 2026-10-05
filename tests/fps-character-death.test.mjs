@@ -53,13 +53,16 @@ async function capturedCharacter(name){
   actor.position.fromArray(initial.groupPosition);actor.quaternion.fromArray(initial.groupRotation);actor.scale.fromArray(initial.groupScale);
   for(const [object,p,q,s]of [[data.visual,initial.visualPosition,initial.visualRotation,initial.visualScale],[data.skin,initial.skinPosition,initial.skinRotation,initial.skinScale]]){object.position.fromArray(p);object.quaternion.fromArray(q);object.scale.fromArray(s);}
   for(const pose of fixture.poses||initial.poses){const bone=data.bones[pose.name];bone.position.fromArray(pose.position);bone.quaternion.fromArray(pose.rotation);bone.scale.fromArray(pose.scale);}
+  // Captured sparse geometry selection is harmless source-model data. Keep
+  // it exact when replaying a public fit instead of silently regenerating it.
+  if(initial.contactSamples)for(let i=0;i<initial.contactSamples.length;i++)data.contactSamples[i].indices=[...initial.contactSamples[i].indices];
   data.deathDirection=new THREE.Vector3(...initial.direction);data.deathHitPoint=initial.hitPoint;data.lastLivingVelocity=initial.initialVelocity;actor.updateMatrixWorld(true);
   return {actor,fixture};
 }
 async function animate(actor,mode='idle'){
   const data=actor.userData,names=new Set(Object.keys(data.bones)),clips=await animations;
   const native=name=>{const clip=clips.find(item=>item.name===name).clone();clip.tracks=clip.tracks.filter(track=>names.has(THREE.PropertyBinding.parseTrackName(track.name).nodeName));return clip;};
-  if(mode.startsWith('run:')){const action=data.mixer.clipAction(native('rifle/run_n')).play();action.time=Number(mode.slice(4));data.mixer.update(0);actor.updateMatrixWorld(true);return;}
+  if(mode.startsWith('run:')){const parts=mode.slice(4).split(':'),run=parts.length>1?parts[0]:'n',phase=Number(parts.at(-1));const action=data.mixer.clipAction(native('rifle/run_'+run)).play();action.time=phase;data.mixer.update(0);actor.updateMatrixWorld(true);return;}
   data.mixer.clipAction(native(mode.includes('crouch')?'rifle/crouchIdle':'rifle/idle')).play();
   if(mode.includes('shoot')||mode==='reload'){
     const upper=new Set();data.bones.spine_3.traverse(object=>upper.add(object.name));data.skin.getObjectByName('wpnPivot')?.traverse(object=>upper.add(object.name));
@@ -105,7 +108,8 @@ test('death builds genuine fifteen-body Cannon worlds with anatomical joint cons
     assert.equal(state.bindings.filter(({body})=>body.shapes[0] instanceof CANNON.Cylinder).length,10,'Eight limbs and both trunk segments use rounded compound proxies');
     for(const {bone,body}of state.bindings)if(bone.name.startsWith('hand_'))assert.equal(body.material.name,'glove');
     const deckContacts=state.world.contactmaterials.filter(item=>item.materials.some(material=>material.name==='deck'));
-    assert.equal(deckContacts.length,2);for(const contact of deckContacts)assert.equal(contact.friction,contact.materials.some(material=>material.name==='glove')?.03:.15);
+    assert.equal(deckContacts.length,3);for(const contact of deckContacts)assert.equal(contact.friction,contact.materials.some(material=>material.name==='glove')?.03:contact.materials.some(material=>material.name==='boot')?.02:.15);
+    const boots=state.bindings.filter(({bone})=>/^ankle_/.test(bone.name));assert.equal(boots.length,2);assert.ok(boots.every(({body})=>body.shapes.length===1&&body.shapes[0] instanceof CANNON.ConvexPolyhedron&&body.material.name==='boot'));
     assert.ok(actor.userData.deathStats.contactVertices>100);checkOffsets(actor);clearCharacterDeath(actor);assert.equal(state.world,null);assert.equal(state.handMaterial,null);
   }
 });
@@ -160,8 +164,11 @@ test('exact public seated and shoulder supports fall naturally while their forme
 });
 
 test('only a slowly changing loaded sleeve/ground brace unlocks passive cloth and waist motion',async()=>{
-  for(const name of ['freight-death-shoulder-support.json','freight-death-seated-support.json','freight-death-running-tripod.json']){
-    const {actor,fixture}=await capturedCharacter(name),data=actor.userData;beginCharacterDeath(actor,fixture.initial.player,fixture.initial.ground);
+  for(const name of ['freight-death-shoulder-support.json','freight-death-seated-support.json','freight-death-running-tripod.json','native-east-run-left']){
+    let actor,fixture;
+    if(name==='native-east-run-left'){
+      actor=await character(0,{yaw:.47});actor.position.set(0,0,0);await animate(actor,'run:e:.5');actor.userData.lastLivingVelocity=new THREE.Vector3(2,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),.47);actor.userData.deathDirection=directionVector('left',.47);fixture={initial:{player:{deathWeapon:1},ground:0}};
+    }else({actor,fixture}=await capturedCharacter(name));const data=actor.userData;beginCharacterDeath(actor,fixture.initial.player,fixture.initial.ground);
     const state=data.deathState,world=state.world,waist=state.joints.find(joint=>joint.name==='spine_0'),materials=world.contactmaterials;
     assert.equal(waist.angle,45*Math.PI/180);assert.equal(waist.constraint.angle,waist.angle);
     assert.ok(materials.filter(cm=>!cm.materials.some(m=>m.name==='deck')).every(cm=>cm.friction===.08));
@@ -176,18 +183,43 @@ test('only a slowly changing loaded sleeve/ground brace unlocks passive cloth an
         assert.ok(proof.armGroundLoad>5&&proof.sleeveChestLoad>5&&proof.hipSpeed<.6&&proof.chestSpeed<.6&&proof.hipAngularSpeed<1.5&&proof.chestAngularSpeed<1.5);
         assert.ok(Object.values(proof).every(Number.isFinite),'Trigger evidence contains scalars only');
         assert.equal(waist.angle,60*Math.PI/180);assert.equal(waist.constraint.angle,waist.angle);
-        for(const cm of materials){const deck=cm.materials.some(m=>m.name==='deck');assert.equal(cm.friction,deck&&!cm.materials.some(m=>m.name==='glove')?.15:0);}
+        for(const cm of materials){const deck=cm.materials.some(m=>m.name==='deck');assert.equal(cm.friction,deck&&!cm.materials.some(m=>m.name==='glove')?(cm.materials.some(m=>m.name==='boot')?.02:.15):0);}
         assert.deepEqual(state.bodies.map(body=>[body.collisionFilterGroup,body.collisionFilterMask]),filters);
         assert.deepEqual(materials.map(cm=>[cm.contactEquationStiffness,cm.contactEquationRelaxation,cm.restitution]),normalParameters);
         const hold=state.supportSlide.hold,steps=data.deathStats.physicsSteps,passes=data.deathStats.contactPasses,pose=point(actor,'head_0');
         advanceCharacterDeath(actor,0);assert.equal(state.supportSlide.hold,hold);assert.equal(data.deathStats.physicsSteps,steps);assert.equal(data.deathStats.contactPasses,passes);assert.ok(point(actor,'head_0').equals(pose));
       }
     }
-    assert.equal(measuredRelease,name.includes('shoulder'));assert.equal(data.deathStats.supportedClothSlip,measuredRelease);
-    assert.equal(state.world,null);assert.equal(state.supportSlide,null);assert.equal(state.material,null);assert.equal(state.handMaterial,null);
+    assert.equal(measuredRelease,name==='native-east-run-left');assert.equal(data.deathStats.supportedClothSlip,measuredRelease);
+    assert.equal(state.world,null);assert.equal(state.supportSlide,null);assert.equal(state.material,null);assert.equal(state.handMaterial,null);assert.equal(state.bootMaterial,null);
     const proof=data.deathStats.supportReleaseProof,steps=data.deathStats.physicsSteps;advanceCharacterDeath(actor,.1);
     assert.deepEqual(data.deathStats.supportReleaseProof,proof);assert.equal(data.deathStats.physicsSteps,steps);clearCharacterDeath(actor);assert.equal(data.deathState,null);assert.equal(data.deathStats,null);
   }
+});
+
+test('exact public boot fit removes empty underground corners and releases tightly curled running knees',async()=>{
+  const {actor,fixture}=await capturedCharacter('freight-death-double-knee-support.json'),data=actor.userData,before=point(actor,'pelvis');
+  // Record the complete visible boot meshes, independently of sparse fitting.
+  actor.updateMatrixWorld(true);const bootMin={L:Infinity,R:Infinity},vertex=new THREE.Vector3();
+  for(const {mesh}of data.contactSamples){mesh.skeleton.update();const p=mesh.geometry.getAttribute('position'),j=mesh.geometry.getAttribute('skinIndex'),w=mesh.geometry.getAttribute('skinWeight');
+    for(const index of new Set(mesh.geometry.index?.array||Array.from({length:p.count},(_,i)=>i))){let strongest=0;for(let k=1;k<4;k++)if(w.getComponent(index,k)>w.getComponent(index,strongest))strongest=k;let bone=mesh.skeleton.bones[j.getComponent(index,strongest)];while(bone?.isBone&&!/^ankle_[LR]$/.test(bone.name))bone=bone.parent;if(!/^ankle_[LR]$/.test(bone?.name||''))continue;mesh.getVertexPosition(index,vertex).applyMatrix4(mesh.matrixWorld);bootMin[bone.name.slice(-1)]=Math.min(bootMin[bone.name.slice(-1)],vertex.y);}}
+  beginCharacterDeath(actor,fixture.initial.player,fixture.initial.ground);assert.ok(point(actor,'pelvis').distanceTo(before)<1e-4);
+  for(const {bone,body}of data.deathState.bindings.filter(b=>/^ankle_/.test(b.bone.name))){
+    body.updateAABB();const min=bootMin[bone.name.slice(-1)],detail={bone:bone.name,meshMin:min,proxyMin:body.aabb.lowerBound.y};
+    assert.ok(body.shapes[0] instanceof CANNON.ConvexPolyhedron&&body.shapes[0].vertices.length<=40,'Low point hull preserves the visible boot envelope');
+    // Exact public left mesh was -0.0162 m; the former empty box corner was
+    // -0.1670 m. Real weighted hull vertices plus an 8 mm radial skin keep
+    // this ground extremum within centimetres, without moving the skeleton.
+    assert.ok(body.aabb.lowerBound.y>=min-.012&&body.aabb.lowerBound.y<=min+.001,JSON.stringify(detail));
+  }
+  let maxGap=0,maxAngle=0;
+  for(let frame=0;frame<360;frame++){advanceCharacterDeath(actor,1/120);checkOffsets(actor);const s=data.deathStats;maxGap=Math.max(maxGap,s.maxJointGap);maxAngle=Math.max(maxAngle,s.maxBendViolation,s.maxTwistViolation,s.maxSwingViolation);}
+  const geometry=corpseGeometry(actor),stats=data.deathStats;assert.ok(spreadGeometry(geometry),JSON.stringify({geometry,stats,maxGap,maxAngle}));assert.ok(maxGap<.055&&maxAngle<.2);
+  assert.ok(stats.maxJointGap<.03&&Math.max(stats.maxBendViolation,stats.maxTwistViolation,stats.maxSwingViolation)<.06);assert.ok(stats.physicsSteps<=504&&stats.age<=2.8);assert.equal(data.deathState.world,null);assert.equal(data.deathState.bootMaterial,null);
+  const steps=stats.physicsSteps,passes=stats.contactPasses,box=bounds(actor);advanceCharacterDeath(actor,.1);assert.deepEqual(bounds(actor),box);assert.equal(data.deathStats.physicsSteps,steps);assert.equal(data.deathStats.contactPasses,passes);
+  for(const pose of fixture.foldedPose){const bone=data.bones[pose.name];bone.position.fromArray(pose.position);bone.quaternion.fromArray(pose.rotation);bone.scale.fromArray(pose.scale);}actor.updateMatrixWorld(true);checkOffsets(actor);
+  const folded=corpseGeometry(actor);assert.ok(folded.headHip>.60&&folded.torsoVerticalRatio<.6&&folded.legSpans.every(value=>value<.56),'The actual failure retains its source lengths but draws both lower limbs to the hips');assert.equal(spreadGeometry(folded),false);
+  clearCharacterDeath(actor);assert.equal(data.deathState,null);
 });
 
 test('running death phases allow a natural bent near leg while rejecting a bilateral curled-leg pile',async()=>{
