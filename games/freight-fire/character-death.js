@@ -1,7 +1,9 @@
 import * as THREE from './vendor/three.module.js';
 import * as CANNON from './vendor/cannon-es.js';
 
-const STEP=1/90,MAX_AGE=2.8,DEG=Math.PI/180;
+// The rounded limb contacts need small steps at impact: 90 Hz lets contact
+// impulses overshoot cone/hinge limits even with extra solver iterations.
+const STEP=1/180,MAX_AGE=2.8,DEG=Math.PI/180,DECK_FRICTION=.15;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 const cv=v=>new CANNON.Vec3(v.x,v.y,v.z);
 const cq=q=>new CANNON.Quaternion(q.x,q.y,q.z,q.w);
@@ -91,7 +93,7 @@ function createBody(state,bone,end,mass,width,depth,{center,radius,halfHeight,ax
   const midpoint=center||position.clone().add(tip).multiplyScalar(.5);
   const offset=midpoint.clone().sub(position).applyQuaternion(inverse);
   const body=new CANNON.Body({mass,material:state.material,position:cv(midpoint),quaternion:cq(rotation),linearDamping:.22,angularDamping:end?.85:.95,
-    allowSleep:true,sleepSpeedLimit:.14,sleepTimeLimit:.35,collisionFilterGroup:2,collisionFilterMask:1});
+    allowSleep:false,collisionFilterGroup:2,collisionFilterMask:1});
   let orientation=new THREE.Quaternion();
   if(radius)body.addShape(new CANNON.Sphere(radius));
   else{
@@ -116,7 +118,7 @@ function cone(state,a,b,pivot,axis,angle,twist,parentAxis=axis){
   constraint.equations.push(limit);
   const update=constraint.update.bind(constraint);constraint.update=()=>{update();constraint.twistEquation.enabled=false;limit.update();};
   for(const equation of constraint.equations)equation.setSpookParams(2e7,6,STEP);
-  constraint.coneEquation.setSpookParams(1e7,4,STEP);limit.setSpookParams(2e6,6,STEP);
+  constraint.coneEquation.setSpookParams(2e7,4,STEP);limit.setSpookParams(2e6,6,STEP);
   state.world.addConstraint(constraint);state.joints.push({constraint,limit,kind:'cone',angle:angle*DEG,name:b.bone.name});
 }
 function hinge(state,a,b,pivot,maxAngle,fallbackAxis){
@@ -157,7 +159,16 @@ function fitShapes(group,state){
     if(binding.bounds.isEmpty()||binding.radius)continue;
     const half=binding.bounds.getSize(new THREE.Vector3()).multiplyScalar(.5).addScalar(.008),center=binding.bounds.getCenter(new THREE.Vector3()).applyQuaternion(binding.orientation);
     half.x=Math.max(.025,half.x);half.y=Math.max(.03,half.y);half.z=Math.max(.025,half.z);
-    binding.body.removeShape(binding.body.shapes[0]);binding.body.addShape(new CANNON.Box(cv(half)),cv(center),cq(binding.orientation));
+    binding.body.removeShape(binding.body.shapes[0]);
+    if(/^(arm_|leg_)/.test(binding.bone.name)){
+      // Rounded limbs roll at the deck instead of stacking their flat box
+      // edges into a hand/knee support. Fit the capsule inside the measured
+      // limb extents; boots/hands and the padded trunk keep their fitted boxes.
+      const radius=Math.min(half.x,half.z,half.y),length=Math.max(.002,2*(half.y-radius)),end=new THREE.Vector3(0,length*.5,0).applyQuaternion(binding.orientation);
+      binding.body.addShape(new CANNON.Cylinder(radius,radius,length,8),cv(center),cq(binding.orientation));
+      binding.body.addShape(new CANNON.Sphere(radius),cv(center.clone().add(end)));
+      binding.body.addShape(new CANNON.Sphere(radius),cv(center.clone().sub(end)));
+    }else binding.body.addShape(new CANNON.Box(cv(half)),cv(center),cq(binding.orientation));
     delete binding.bounds;delete binding.inverseBody;delete binding.inverseShape;
   }
   state.contactVertices=vertices;
@@ -255,15 +266,23 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
   for(const side of ['L','R'])neutral.thigh[side]=worldPoint(data.bones['leg_lower_'+side]).sub(worldPoint(data.bones['leg_upper_'+side])).normalize();
   for(const pose of poses){pose.bone.quaternion.copy(pose.quaternion).normalize();pose.bone.position.copy(pose.bone.name==='pelvis'?pose.position:pose.rest.position);pose.bone.scale.copy(pose.rest.scale);}
   group.updateMatrixWorld(true);
-  const world=new CANNON.World({gravity:new CANNON.Vec3(0,-9.81,0),allowSleep:true});
+  // Cannon does not wake connected sleeping bodies from constraint forces.
+  // Sleeping a pelvis/head on its own gives it zero solver mass and can pin
+  // the other limbs into a raised tripod. Freeze only the complete quiet
+  // corpse below, then release the whole world together.
+  const world=new CANNON.World({gravity:new CANNON.Vec3(0,-9.81,0),allowSleep:false});
   world.solver.iterations=24;world.solver.tolerance=1e-6;
-  Object.assign(world.defaultContactMaterial,{friction:.72,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4});
+  Object.assign(world.defaultContactMaterial,{friction:DECK_FRICTION,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4});
   const material=new CANNON.Material('corpse'),floorMaterial=new CANNON.Material('deck');
   world.addContactMaterial(new CANNON.ContactMaterial(material,material,{friction:.08,restitution:0,contactEquationStiffness:5e4,contactEquationRelaxation:8,frictionEquationStiffness:5e4,frictionEquationRelaxation:8}));
   // Slow positional correction for a boot initially a few centimetres below
   // the deck; a very hard correction injects upward velocity into the whole
   // linked corpse. Restitution stays zero and gravity remains fully physical.
-  world.addContactMaterial(new CANNON.ContactMaterial(material,floorMaterial,{friction:.72,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
+  // A fallen cloth body can slide on the metal deck. High static friction locks
+  // bent knees and a hand into a tripod, leaving the torso propped up when the
+  // respawn budget expires. Let gravity collapse that support through actual
+  // contact friction; bone poses and joint limits are never pulled toward a pose.
+  world.addContactMaterial(new CANNON.ContactMaterial(material,floorMaterial,{friction:DECK_FRICTION,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
   const plane=new CANNON.Body({mass:0,material:floorMaterial,shape:new CANNON.Plane(),position:new CANNON.Vec3(0,Number.isFinite(ground)?ground:0,0),collisionFilterGroup:1,collisionFilterMask:14});
   plane.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);world.addBody(plane);
   const state={age:0,accumulator:0,frozen:false,world,material,poses,player,neutral,bodies:[],bindings:[],joints:[],ground:Number.isFinite(ground)?ground:0,
@@ -289,7 +308,7 @@ export function advanceCharacterDeath(group,dt=1/60){
   data.deathAge=state.age;
   data.deathStats={age:state.age,clip:'ragdoll',engine:'cannon-es',source:'current skinned skeleton',once:true,phase:state.frozen?'frozen':'physics',
     groundContacts:true,horizontalContacts:false,collisionMode:'ground-only',contactVertices:state.contactVertices,contactPasses:state.contactPasses,
-    rigidBodies:15,constraints:14,physicsSteps:state.steps,groundContactCount:state.groundContactCount,selfContactCount:state.world.contacts.length-state.groundContactCount,impulse:state.impulse,initialVelocity:state.initialVelocity,
+    rigidBodies:15,constraints:14,physicsSteps:state.steps,physicsStepSeconds:STEP,groundContactCount:state.groundContactCount,selfContactCount:state.world.contacts.length-state.groundContactCount,impulse:state.impulse,initialVelocity:state.initialVelocity,
     frozen:state.frozen,freezeReason:state.freezeReason,...measured};
   if(state.frozen)release(state);
   return data.deathStats;
