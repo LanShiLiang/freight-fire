@@ -108,8 +108,8 @@ try {
   await screenshot('02-public-m4a1');
 
   stage('Use B at the actual spawn cabin to equip AK');
-  await buy(1); const ak = await state(); assert.match(ak.view.asset, /ak47-fire-serpent/); assert.ok(ak.view.attachmentError < 1e-5);
-  check('Real B purchase equips the Fire Serpent AK', ak); await screenshot('03-public-ak47');
+  await buy(1); const ak = await state(); assert.match(ak.view.asset, /ak47-docksteel/); assert.ok(ak.view.attachmentError < 1e-5);
+  check('Real B purchase equips the original Dock Steel AK', ak); await screenshot('03-public-ak47');
 
   stage('Use B to equip AWP and cycle both scope levels');
   await buy(2); assert.match((await state()).view.asset, /awp-dragon-lore/);

@@ -7,7 +7,7 @@ import {declareAsset,loadGLTF} from './asset-loading.js';
 // No replacement firearm is fitted onto another weapon's hand animation.
 export const AUTHORED_RIGS=Object.freeze({
  m4a1:{file:'m4a1-golden-coil',model:'M4A1-S | Golden Coil'},
- ak47:{file:'ak47-fire-serpent',model:'AK-47 | Fire Serpent'},
+ ak47:{file:'ak47-docksteel',model:'AK-47 | Dock Steel'},
  awp:{file:'awp-dragon-lore',model:'AWP | Dragon Lore'},
  usp:{file:'usp-kill-confirmed',model:'USP-S | Kill Confirmed'},
  knife:{file:'karambit-sapphire',model:'Karambit | Sapphire'},
@@ -18,9 +18,10 @@ const V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z),clamp=n=>Math.max(0,Math.min(1,n
 // Cancel the duplicate exported basis at the original animated wpn joint.
 export const WEAPON_SOURCE_BASIS_INVERSE=new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion(-.5,-.5,-.5,.5)).invert();
 const url=file=>new URL(`./assets/viewmodel-cs2/${file}.glb`,import.meta.url).href;
+const armFiles=Object.freeze({'ct-sas':'ct-sas-harbor','t-phoenix':'t-phoenix-harbor'});
 const modelAssets=[
- ['animations-selected',3719372,'第一人称动作'],['ct-sas',4280896,'保卫者手模'],['t-phoenix',4782448,'潜伏者手模'],
- ['m4a1-golden-coil',4516992,'M4A1 金蛇缠绕'],['ak47-fire-serpent',3400016,'AK-47 火蛇'],
+ ['animations-selected',3719372,'第一人称动作'],['ct-sas-harbor',4144592,'保卫者 · 港湾警戒'],['t-phoenix-harbor',4523660,'潜伏者 · 港湾警戒'],
+ ['m4a1-golden-coil',4516992,'M4A1 金蛇缠绕'],['ak47-docksteel',2696768,'AK-47 船坞黑钢'],
  ['awp-dragon-lore',4490124,'AWM 狙击枪'],['usp-kill-confirmed',3266132,'USP 手枪'],['karambit-sapphire',2877116,'爪子刀'],
 ];
 for(const [file,bytes,label]of modelAssets)declareAsset(url(file),{bytes,label,group:'viewmodels'});
@@ -38,7 +39,7 @@ function staticGlass(root){
 }
 export async function loadViewModels(){if(loading)return loading;loading=(async()=>{const loader=new GLTFLoader();await Promise.all([
  loadModel(loader,'animations-selected').then(source=>animations=source),
- ...['ct-sas','t-phoenix'].map(async id=>{const source=await loadModel(loader,id);prepare(source.scene);arms.set(id,source);}),
+ ...['ct-sas','t-phoenix'].map(async id=>{const source=await loadModel(loader,armFiles[id]);prepare(source.scene);arms.set(id,source);}),
  ...ids.map(async id=>{const source=await loadModel(loader,AUTHORED_RIGS[id].file);if(id==='awp')staticGlass(source.scene);prepare(source.scene);sources.set(id,source);}),
  ]);})().catch(error=>{loading=null;throw error;});return loading;}
 function attach(r){r.root.updateWorldMatrix(true,true);new THREE.Matrix4().copy(r.root.matrixWorld).invert().multiply(r.anchor.matrixWorld).multiply(WEAPON_SOURCE_BASIS_INVERSE).decompose(r.mount.position,r.mount.quaternion,r.mount.scale);r.mount.updateWorldMatrix(false,true);}

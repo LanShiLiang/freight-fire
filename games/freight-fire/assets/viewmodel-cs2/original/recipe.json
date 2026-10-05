@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "lock": "../original-skins.json",
+  "models": [
+    {
+      "input": "../ct-sas.glb",
+      "output": "../ct-sas-harbor.glb",
+      "sourceSha256": "ccef85a6e35bd11507885df86030d220410b3a62e0f9af4b817d0097a0bd8685",
+      "replacements": [
+        {
+          "imageIndex": 0,
+          "image": "harbor-gloves-color.jpg",
+          "name": "harbor-gloves-color.jpg",
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-a3027725-68bf-4b5e-ba74-a0085b8fc9fb",
+            "promptSummary": "Edit the original glove UV atlas into original navy harbor work gloves with gray reinforced palms, orange stitching and industrial diagonal accents; retain the atlas island layout.",
+            "generatedImage": {
+              "sha256": "a8a2b25e4a31983f421b32b0467af1479d3a6ff71597f2303ac92e32c6604bb9",
+              "bytes": 3113037,
+              "width": 1254,
+              "height": 1254,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 1024,
+              "height": 1024
+            }
+          }
+        },
+        {
+          "imageIndex": 6,
+          "image": "harbor-ct-sleeve-color.jpg",
+          "name": "harbor-ct-sleeve-color.jpg",
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-fc8e4e58-0f60-4c0a-9abd-a1a126d56094",
+            "promptSummary": "Edit the SAS sleeve UV atlas into original navy harbor workwear with orange seam accents; preserve exposed skin and all existing UV island placement.",
+            "generatedImage": {
+              "sha256": "a758986d6c1a7edafaa5c53e660f523991a1036ef64a0e314dde7d903efd0084",
+              "bytes": 2362094,
+              "width": 887,
+              "height": 1774,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 512,
+              "height": 1024
+            }
+          }
+        }
+      ],
+      "materialNames": {
+        "0": "Harbor Work Gloves (left)",
+        "1": "Harbor Work Gloves (right)",
+        "3": "Harbor SAS Sleeves"
+      }
+    },
+    {
+      "input": "../t-phoenix.glb",
+      "output": "../t-phoenix-harbor.glb",
+      "sourceSha256": "4ea5e2de35189420fb1c19a07f8181692bcef1d662e068065e8a4a9b6cb2e9b5",
+      "replacements": [
+        {
+          "imageIndex": 0,
+          "image": "harbor-gloves-color.jpg",
+          "name": "harbor-gloves-color.jpg",
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-a3027725-68bf-4b5e-ba74-a0085b8fc9fb",
+            "promptSummary": "Edit the original glove UV atlas into original navy harbor work gloves with gray reinforced palms, orange stitching and industrial diagonal accents; retain the atlas island layout.",
+            "generatedImage": {
+              "sha256": "a8a2b25e4a31983f421b32b0467af1479d3a6ff71597f2303ac92e32c6604bb9",
+              "bytes": 3113037,
+              "width": 1254,
+              "height": 1254,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 1024,
+              "height": 1024
+            }
+          }
+        },
+        {
+          "imageIndex": 6,
+          "image": "harbor-t-sleeve-color.jpg",
+          "name": "harbor-t-sleeve-color.jpg",
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-60702ea6-2c84-4fd8-9d1f-f173c3e6f440",
+            "promptSummary": "Edit the Phoenix body and sleeve atlas into original navy harbor workwear with subtle industrial line markings and orange seams; retain skin, vest and UV island placement.",
+            "generatedImage": {
+              "sha256": "bd354a09cade6bd8fc04bd1b4a04f8064e11b0a5daefdcefd2c55f69c7d23880",
+              "bytes": 2400620,
+              "width": 1254,
+              "height": 1254,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 1024,
+              "height": 1024
+            }
+          }
+        }
+      ],
+      "materialNames": {
+        "0": "Harbor Work Gloves (left)",
+        "1": "Harbor Work Gloves (right)",
+        "3": "Harbor Phoenix Sleeves"
+      }
+    },
+    {
+      "input": "../ak47-fire-serpent.glb",
+      "output": "../ak47-docksteel.glb",
+      "sourceSha256": "3591d83e3c1de5eab06d4d656fbc0d6a6a753d984df438edb97c7d0549af2550",
+      "replacements": [
+        {
+          "imageIndex": 0,
+          "image": "docksteel-color.jpg",
+          "name": "docksteel-color.jpg",
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-dd9ede8d-ac07-41f1-bae2-3a43741fe920",
+            "promptSummary": "Edit the original AK base-color UV atlas into original dockyard black steel, navy furniture and orange double-stripe accents; remove Fire Serpent artwork and retain every mechanical UV island.",
+            "generatedImage": {
+              "sha256": "03bdc9a576665103e064991748529cefc4a895e6725597c213b588b2a63ef087",
+              "bytes": 2591567,
+              "width": 1254,
+              "height": 1254,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 2048,
+              "height": 2048
+            }
+          }
+        }
+      ],
+      "materialNames": {
+        "0": "AK-47 | Docksteel"
+      }
+    }
+  ]
+}

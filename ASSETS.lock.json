@@ -398,6 +398,11 @@
       "sha256": "f31b7d4826303b596691441b056aecaca5eef59dffe049a4506a96f0232319cb"
     },
     {
+      "path": "games/freight-fire/assets/viewmodel-cs2/ak47-docksteel.glb",
+      "bytes": 2696768,
+      "sha256": "67bfb2db963b8cdbd3941bb0749868069efb5d6b3c4ff782c1a6c4c37234b19f"
+    },
+    {
       "path": "games/freight-fire/assets/viewmodel-cs2/ak47-fire-serpent.glb",
       "bytes": 3400016,
       "sha256": "3591d83e3c1de5eab06d4d656fbc0d6a6a753d984df438edb97c7d0549af2550"
@@ -428,6 +433,11 @@
       "sha256": "1ac23c5e6886527fadd17b41a841f248e3d26b9af9d8e23ce3d1916afa0351c7"
     },
     {
+      "path": "games/freight-fire/assets/viewmodel-cs2/ct-sas-harbor.glb",
+      "bytes": 4144592,
+      "sha256": "a0ad27ae64c66f92447ee10822a7f2bc95e9c389017d99a7b9d4524758d09d5b"
+    },
+    {
       "path": "games/freight-fire/assets/viewmodel-cs2/ct-sas.glb",
       "bytes": 4280896,
       "sha256": "ccef85a6e35bd11507885df86030d220410b3a62e0f9af4b817d0097a0bd8685"
@@ -453,6 +463,36 @@
       "sha256": "c39ffad87ceb2bea3b0a596f3f653c9abb3eb63181347c59c4d5b434548023b1"
     },
     {
+      "path": "games/freight-fire/assets/viewmodel-cs2/original-skins.json",
+      "bytes": 28506,
+      "sha256": "b29e2bb67e558d72a80aec9737a292423190e519ee5d6a51a3f60b41adf958ba"
+    },
+    {
+      "path": "games/freight-fire/assets/viewmodel-cs2/original/docksteel-color.jpg",
+      "bytes": 816682,
+      "sha256": "36d0d722a087a0f51d1421f04bde42ddedc287212f84f89bfc3fd3bf036fe033"
+    },
+    {
+      "path": "games/freight-fire/assets/viewmodel-cs2/original/harbor-ct-sleeve-color.jpg",
+      "bytes": 102439,
+      "sha256": "5eec3ca978369afc5e8dace658216203794d573a1394f30ec87857bbe74197a8"
+    },
+    {
+      "path": "games/freight-fire/assets/viewmodel-cs2/original/harbor-gloves-color.jpg",
+      "bytes": 376421,
+      "sha256": "d51d1f82c600eddf11f8d731ab23ab7429bc5a7c023a67548e3daef2bd6cb6f6"
+    },
+    {
+      "path": "games/freight-fire/assets/viewmodel-cs2/original/harbor-t-sleeve-color.jpg",
+      "bytes": 284744,
+      "sha256": "1c944add9688aebaf65ba8643f8058342d6a78ab0d8657758cf6650f949605fa"
+    },
+    {
+      "path": "games/freight-fire/assets/viewmodel-cs2/original/recipe.json",
+      "bytes": 6473,
+      "sha256": "93e2b0b21bb457c6cebac098195e03a762efd7b70d429aa22f5077e8988ceb9d"
+    },
+    {
       "path": "games/freight-fire/assets/viewmodel-cs2/skin-selection.json",
       "bytes": 3097,
       "sha256": "8d59840c407c281e5338cc798a7dcfd83abcb51d499e7c6eb9d2551d52044c0c"
@@ -464,8 +504,13 @@
     },
     {
       "path": "games/freight-fire/assets/viewmodel-cs2/SOURCES.md",
-      "bytes": 3909,
-      "sha256": "64586590c71bda698b0b63470333c9de44826ff24adf0ce9df23fdbef59b5461"
+      "bytes": 4914,
+      "sha256": "3572f68a850392e0f7d69ec6d66a8863deeba18e2a6d14c5298e04fa0fc48bbf"
+    },
+    {
+      "path": "games/freight-fire/assets/viewmodel-cs2/t-phoenix-harbor.glb",
+      "bytes": 4523660,
+      "sha256": "b0091e75e2ac34ea73d8399dd8562df63cf3ddbb115549fdbbd82e458dba7f7e"
     },
     {
       "path": "games/freight-fire/assets/viewmodel-cs2/t-phoenix.glb",

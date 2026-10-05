@@ -1,0 +1,697 @@
+{
+  "version": 1,
+  "kind": "original-textures-on-original-rigs",
+  "recipe": "recipe.json",
+  "assets": [
+    {
+      "source": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/ct-sas.glb",
+        "bytes": 4280896,
+        "sha256": "ccef85a6e35bd11507885df86030d220410b3a62e0f9af4b817d0097a0bd8685"
+      },
+      "output": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/ct-sas-harbor.glb",
+        "bytes": 4144592,
+        "sha256": "a0ad27ae64c66f92447ee10822a7f2bc95e9c389017d99a7b9d4524758d09d5b"
+      },
+      "replacements": [
+        {
+          "imageIndex": 0,
+          "bufferView": 9,
+          "previous": {
+            "mimeType": "image/jpeg",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 461263,
+            "sha256": "836e33988d786a8580f1a62c157707cfb817816eda5baacba43a1481ed7c18aa"
+          },
+          "next": {
+            "mimeType": "image/jpeg",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 376421,
+            "sha256": "d51d1f82c600eddf11f8d731ab23ab7429bc5a7c023a67548e3daef2bd6cb6f6"
+          },
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-a3027725-68bf-4b5e-ba74-a0085b8fc9fb",
+            "promptSummary": "Edit the original glove UV atlas into original navy harbor work gloves with gray reinforced palms, orange stitching and industrial diagonal accents; retain the atlas island layout.",
+            "generatedImage": {
+              "sha256": "a8a2b25e4a31983f421b32b0467af1479d3a6ff71597f2303ac92e32c6604bb9",
+              "bytes": 3113037,
+              "width": 1254,
+              "height": 1254,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 1024,
+              "height": 1024
+            },
+            "file": "harbor-gloves-color.jpg"
+          }
+        },
+        {
+          "imageIndex": 6,
+          "bufferView": 30,
+          "previous": {
+            "mimeType": "image/jpeg",
+            "width": 512,
+            "height": 1024,
+            "bytes": 153746,
+            "sha256": "3c24dc3800f46a39df59fe9224f0bd039e1afe8c35bb9a98f1dfe559e65cf23e"
+          },
+          "next": {
+            "mimeType": "image/jpeg",
+            "width": 512,
+            "height": 1024,
+            "bytes": 102439,
+            "sha256": "5eec3ca978369afc5e8dace658216203794d573a1394f30ec87857bbe74197a8"
+          },
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-fc8e4e58-0f60-4c0a-9abd-a1a126d56094",
+            "promptSummary": "Edit the SAS sleeve UV atlas into original navy harbor workwear with orange seam accents; preserve exposed skin and all existing UV island placement.",
+            "generatedImage": {
+              "sha256": "a758986d6c1a7edafaa5c53e660f523991a1036ef64a0e314dde7d903efd0084",
+              "bytes": 2362094,
+              "width": 887,
+              "height": 1774,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 512,
+              "height": 1024
+            },
+            "file": "harbor-ct-sleeve-color.jpg"
+          }
+        }
+      ],
+      "geometryComparison": {
+        "identical": true,
+        "structure": {
+          "nodes": true,
+          "scenes": true,
+          "scene": true,
+          "skins": true,
+          "meshes": true,
+          "accessors": true,
+          "animations": true,
+          "textures": true,
+          "samplers": true
+        },
+        "nonImageBufferViews": [
+          {
+            "index": 0,
+            "sourceSha256": "2d686fea3544e9c88cefcf94920ee43c01e8cdbd9b3bb7c9172ab4df7e374de5",
+            "outputSha256": "2d686fea3544e9c88cefcf94920ee43c01e8cdbd9b3bb7c9172ab4df7e374de5",
+            "sameMetadata": true
+          },
+          {
+            "index": 1,
+            "sourceSha256": "10eb2c525902b13f246e45b4ac9bc8d7e0e93336e366332ab7485753e0e15428",
+            "outputSha256": "10eb2c525902b13f246e45b4ac9bc8d7e0e93336e366332ab7485753e0e15428",
+            "sameMetadata": true
+          },
+          {
+            "index": 2,
+            "sourceSha256": "aa8c374856d7636bdfde83d8e720167fd0862d02350f413de234b9e0b7a5b576",
+            "outputSha256": "aa8c374856d7636bdfde83d8e720167fd0862d02350f413de234b9e0b7a5b576",
+            "sameMetadata": true
+          },
+          {
+            "index": 3,
+            "sourceSha256": "6e210b42775e6eac852cd64f0fe09ba0ebd6c791590031458ba1e17e2a2e0a57",
+            "outputSha256": "6e210b42775e6eac852cd64f0fe09ba0ebd6c791590031458ba1e17e2a2e0a57",
+            "sameMetadata": true
+          },
+          {
+            "index": 4,
+            "sourceSha256": "87aa1bfbc1746a2943a0c1d5e65d0dc3a1615ad65a2345b0b127c40fcaa0ad8b",
+            "outputSha256": "87aa1bfbc1746a2943a0c1d5e65d0dc3a1615ad65a2345b0b127c40fcaa0ad8b",
+            "sameMetadata": true
+          },
+          {
+            "index": 5,
+            "sourceSha256": "6ad382a38f8b5a6f655f68339880318874058632d73b6e21f1fb09b5e71cbed1",
+            "outputSha256": "6ad382a38f8b5a6f655f68339880318874058632d73b6e21f1fb09b5e71cbed1",
+            "sameMetadata": true
+          },
+          {
+            "index": 6,
+            "sourceSha256": "c9077e151f21572364b55657c51f868d849dbac04286bfe9ee365b507f92f1c0",
+            "outputSha256": "c9077e151f21572364b55657c51f868d849dbac04286bfe9ee365b507f92f1c0",
+            "sameMetadata": true
+          },
+          {
+            "index": 7,
+            "sourceSha256": "498a6e3b8e77e478e2a32518cdf789238a2c952a7ddb0bf6f3c1771dd49f49c8",
+            "outputSha256": "498a6e3b8e77e478e2a32518cdf789238a2c952a7ddb0bf6f3c1771dd49f49c8",
+            "sameMetadata": true
+          },
+          {
+            "index": 8,
+            "sourceSha256": "8fcdc4ed0dc8042ad5f63aa4a6bb45b324d8e8ec7184c7f7383773dfa436dbe9",
+            "outputSha256": "8fcdc4ed0dc8042ad5f63aa4a6bb45b324d8e8ec7184c7f7383773dfa436dbe9",
+            "sameMetadata": true
+          },
+          {
+            "index": 12,
+            "sourceSha256": "b4e69bb2cf1f4cf9045d9f68b116360646ebc6f96ca9ee58593fea500fd38cde",
+            "outputSha256": "b4e69bb2cf1f4cf9045d9f68b116360646ebc6f96ca9ee58593fea500fd38cde",
+            "sameMetadata": true
+          },
+          {
+            "index": 13,
+            "sourceSha256": "695dd8e8b0b431b732ced0fe8ea035f53b5459931c587ea4955708e775d916e7",
+            "outputSha256": "695dd8e8b0b431b732ced0fe8ea035f53b5459931c587ea4955708e775d916e7",
+            "sameMetadata": true
+          },
+          {
+            "index": 14,
+            "sourceSha256": "3249881b503bd42aaf4973a1920b0c149d9d46827109901f96b9a4339c896162",
+            "outputSha256": "3249881b503bd42aaf4973a1920b0c149d9d46827109901f96b9a4339c896162",
+            "sameMetadata": true
+          },
+          {
+            "index": 15,
+            "sourceSha256": "4f848a991018522b126d4ee5139fe6dfc36d5ca5a451450a7b3b4a787c0ff0ef",
+            "outputSha256": "4f848a991018522b126d4ee5139fe6dfc36d5ca5a451450a7b3b4a787c0ff0ef",
+            "sameMetadata": true
+          },
+          {
+            "index": 16,
+            "sourceSha256": "f4293aa4409e6411f83fabcfe5eaa138d326453aa56b0032598174422d83d0e1",
+            "outputSha256": "f4293aa4409e6411f83fabcfe5eaa138d326453aa56b0032598174422d83d0e1",
+            "sameMetadata": true
+          },
+          {
+            "index": 17,
+            "sourceSha256": "6db5d75c7703d8f7fb44cdd6f3c13d08756c41a8fe7387c900273c600c811279",
+            "outputSha256": "6db5d75c7703d8f7fb44cdd6f3c13d08756c41a8fe7387c900273c600c811279",
+            "sameMetadata": true
+          },
+          {
+            "index": 18,
+            "sourceSha256": "b1c65e9831b0b47d59d84850e4ae1963bfaf365df8dbd072441cd71900a3a87a",
+            "outputSha256": "b1c65e9831b0b47d59d84850e4ae1963bfaf365df8dbd072441cd71900a3a87a",
+            "sameMetadata": true
+          },
+          {
+            "index": 19,
+            "sourceSha256": "8c916ac5e8fdf6f81e2e91f82252862a7afdc13e0c56456606ca60b95caf270f",
+            "outputSha256": "8c916ac5e8fdf6f81e2e91f82252862a7afdc13e0c56456606ca60b95caf270f",
+            "sameMetadata": true
+          },
+          {
+            "index": 20,
+            "sourceSha256": "d167097e44c1bf1ab4e48f3b2354102b9053522c91cdfba60530255607dde9ff",
+            "outputSha256": "d167097e44c1bf1ab4e48f3b2354102b9053522c91cdfba60530255607dde9ff",
+            "sameMetadata": true
+          },
+          {
+            "index": 21,
+            "sourceSha256": "4b8482309c9cc23d2e82eb1d357b54157a7cc341228f25c68fc376b9d4ce146b",
+            "outputSha256": "4b8482309c9cc23d2e82eb1d357b54157a7cc341228f25c68fc376b9d4ce146b",
+            "sameMetadata": true
+          },
+          {
+            "index": 22,
+            "sourceSha256": "7140edb673c0528f6ae4b154dc4fd054be5969224c2f90a1d120020250928a98",
+            "outputSha256": "7140edb673c0528f6ae4b154dc4fd054be5969224c2f90a1d120020250928a98",
+            "sameMetadata": true
+          },
+          {
+            "index": 23,
+            "sourceSha256": "0a9bd7e65c5e50861f14fbb182629493a1a16fe614c6cf8be150877aae6cf78c",
+            "outputSha256": "0a9bd7e65c5e50861f14fbb182629493a1a16fe614c6cf8be150877aae6cf78c",
+            "sameMetadata": true
+          },
+          {
+            "index": 24,
+            "sourceSha256": "b26afe562cf555e3a9ab763445bedbed6c7e7d439b0961a5ab095a0e84b15154",
+            "outputSha256": "b26afe562cf555e3a9ab763445bedbed6c7e7d439b0961a5ab095a0e84b15154",
+            "sameMetadata": true
+          },
+          {
+            "index": 25,
+            "sourceSha256": "ed1f0272c8517cce6282a2965db728ad9bd42d1149010e471ae01e1f399c61ec",
+            "outputSha256": "ed1f0272c8517cce6282a2965db728ad9bd42d1149010e471ae01e1f399c61ec",
+            "sameMetadata": true
+          },
+          {
+            "index": 26,
+            "sourceSha256": "74c06c17eef589d9f670dd70507333cec12feeced0af38cca6a7e7368d5c9c03",
+            "outputSha256": "74c06c17eef589d9f670dd70507333cec12feeced0af38cca6a7e7368d5c9c03",
+            "sameMetadata": true
+          }
+        ],
+        "protectedAccessorCount": 24
+      },
+      "materialNames": {
+        "0": "Harbor Work Gloves (left)",
+        "1": "Harbor Work Gloves (right)",
+        "3": "Harbor SAS Sleeves"
+      }
+    },
+    {
+      "source": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/t-phoenix.glb",
+        "bytes": 4782448,
+        "sha256": "4ea5e2de35189420fb1c19a07f8181692bcef1d662e068065e8a4a9b6cb2e9b5"
+      },
+      "output": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/t-phoenix-harbor.glb",
+        "bytes": 4523660,
+        "sha256": "b0091e75e2ac34ea73d8399dd8562df63cf3ddbb115549fdbbd82e458dba7f7e"
+      },
+      "replacements": [
+        {
+          "imageIndex": 0,
+          "bufferView": 9,
+          "previous": {
+            "mimeType": "image/jpeg",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 461263,
+            "sha256": "836e33988d786a8580f1a62c157707cfb817816eda5baacba43a1481ed7c18aa"
+          },
+          "next": {
+            "mimeType": "image/jpeg",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 376421,
+            "sha256": "d51d1f82c600eddf11f8d731ab23ab7429bc5a7c023a67548e3daef2bd6cb6f6"
+          },
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-a3027725-68bf-4b5e-ba74-a0085b8fc9fb",
+            "promptSummary": "Edit the original glove UV atlas into original navy harbor work gloves with gray reinforced palms, orange stitching and industrial diagonal accents; retain the atlas island layout.",
+            "generatedImage": {
+              "sha256": "a8a2b25e4a31983f421b32b0467af1479d3a6ff71597f2303ac92e32c6604bb9",
+              "bytes": 3113037,
+              "width": 1254,
+              "height": 1254,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 1024,
+              "height": 1024
+            },
+            "file": "harbor-gloves-color.jpg"
+          }
+        },
+        {
+          "imageIndex": 6,
+          "bufferView": 37,
+          "previous": {
+            "mimeType": "image/jpeg",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 458505,
+            "sha256": "fc73ad09cea3e536c3fe16a489e2acce160f49072a4c5ea8f0e67921641c0b00"
+          },
+          "next": {
+            "mimeType": "image/jpeg",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 284744,
+            "sha256": "1c944add9688aebaf65ba8643f8058342d6a78ab0d8657758cf6650f949605fa"
+          },
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-60702ea6-2c84-4fd8-9d1f-f173c3e6f440",
+            "promptSummary": "Edit the Phoenix body and sleeve atlas into original navy harbor workwear with subtle industrial line markings and orange seams; retain skin, vest and UV island placement.",
+            "generatedImage": {
+              "sha256": "bd354a09cade6bd8fc04bd1b4a04f8064e11b0a5daefdcefd2c55f69c7d23880",
+              "bytes": 2400620,
+              "width": 1254,
+              "height": 1254,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 1024,
+              "height": 1024
+            },
+            "file": "harbor-t-sleeve-color.jpg"
+          }
+        }
+      ],
+      "geometryComparison": {
+        "identical": true,
+        "structure": {
+          "nodes": true,
+          "scenes": true,
+          "scene": true,
+          "skins": true,
+          "meshes": true,
+          "accessors": true,
+          "animations": true,
+          "textures": true,
+          "samplers": true
+        },
+        "nonImageBufferViews": [
+          {
+            "index": 0,
+            "sourceSha256": "2d686fea3544e9c88cefcf94920ee43c01e8cdbd9b3bb7c9172ab4df7e374de5",
+            "outputSha256": "2d686fea3544e9c88cefcf94920ee43c01e8cdbd9b3bb7c9172ab4df7e374de5",
+            "sameMetadata": true
+          },
+          {
+            "index": 1,
+            "sourceSha256": "10eb2c525902b13f246e45b4ac9bc8d7e0e93336e366332ab7485753e0e15428",
+            "outputSha256": "10eb2c525902b13f246e45b4ac9bc8d7e0e93336e366332ab7485753e0e15428",
+            "sameMetadata": true
+          },
+          {
+            "index": 2,
+            "sourceSha256": "aa8c374856d7636bdfde83d8e720167fd0862d02350f413de234b9e0b7a5b576",
+            "outputSha256": "aa8c374856d7636bdfde83d8e720167fd0862d02350f413de234b9e0b7a5b576",
+            "sameMetadata": true
+          },
+          {
+            "index": 3,
+            "sourceSha256": "6e210b42775e6eac852cd64f0fe09ba0ebd6c791590031458ba1e17e2a2e0a57",
+            "outputSha256": "6e210b42775e6eac852cd64f0fe09ba0ebd6c791590031458ba1e17e2a2e0a57",
+            "sameMetadata": true
+          },
+          {
+            "index": 4,
+            "sourceSha256": "87aa1bfbc1746a2943a0c1d5e65d0dc3a1615ad65a2345b0b127c40fcaa0ad8b",
+            "outputSha256": "87aa1bfbc1746a2943a0c1d5e65d0dc3a1615ad65a2345b0b127c40fcaa0ad8b",
+            "sameMetadata": true
+          },
+          {
+            "index": 5,
+            "sourceSha256": "6ad382a38f8b5a6f655f68339880318874058632d73b6e21f1fb09b5e71cbed1",
+            "outputSha256": "6ad382a38f8b5a6f655f68339880318874058632d73b6e21f1fb09b5e71cbed1",
+            "sameMetadata": true
+          },
+          {
+            "index": 6,
+            "sourceSha256": "c9077e151f21572364b55657c51f868d849dbac04286bfe9ee365b507f92f1c0",
+            "outputSha256": "c9077e151f21572364b55657c51f868d849dbac04286bfe9ee365b507f92f1c0",
+            "sameMetadata": true
+          },
+          {
+            "index": 7,
+            "sourceSha256": "498a6e3b8e77e478e2a32518cdf789238a2c952a7ddb0bf6f3c1771dd49f49c8",
+            "outputSha256": "498a6e3b8e77e478e2a32518cdf789238a2c952a7ddb0bf6f3c1771dd49f49c8",
+            "sameMetadata": true
+          },
+          {
+            "index": 8,
+            "sourceSha256": "8fcdc4ed0dc8042ad5f63aa4a6bb45b324d8e8ec7184c7f7383773dfa436dbe9",
+            "outputSha256": "8fcdc4ed0dc8042ad5f63aa4a6bb45b324d8e8ec7184c7f7383773dfa436dbe9",
+            "sameMetadata": true
+          },
+          {
+            "index": 12,
+            "sourceSha256": "a62306302b519fbdf09058d655b577dfbb3c48a1cd0257ab93cdcc091f160680",
+            "outputSha256": "a62306302b519fbdf09058d655b577dfbb3c48a1cd0257ab93cdcc091f160680",
+            "sameMetadata": true
+          },
+          {
+            "index": 13,
+            "sourceSha256": "695dd8e8b0b431b732ced0fe8ea035f53b5459931c587ea4955708e775d916e7",
+            "outputSha256": "695dd8e8b0b431b732ced0fe8ea035f53b5459931c587ea4955708e775d916e7",
+            "sameMetadata": true
+          },
+          {
+            "index": 14,
+            "sourceSha256": "1d88aa193a372b718b933769f41efe987dfbcfa268215ca49a56d36638dcb46f",
+            "outputSha256": "1d88aa193a372b718b933769f41efe987dfbcfa268215ca49a56d36638dcb46f",
+            "sameMetadata": true
+          },
+          {
+            "index": 15,
+            "sourceSha256": "1a8c542dd0ea222c3ad48662d273ca14425d434e872149193e448e6d91abdccf",
+            "outputSha256": "1a8c542dd0ea222c3ad48662d273ca14425d434e872149193e448e6d91abdccf",
+            "sameMetadata": true
+          },
+          {
+            "index": 16,
+            "sourceSha256": "b784a1fa0a6f2c26ea2b203d1ed3fb2b81613f7b808c4b4887d2ffaf07f83bfb",
+            "outputSha256": "b784a1fa0a6f2c26ea2b203d1ed3fb2b81613f7b808c4b4887d2ffaf07f83bfb",
+            "sameMetadata": true
+          },
+          {
+            "index": 17,
+            "sourceSha256": "b63e831f7745bf51028370ecc104071eb367f9afd0e88148a155319148898f3b",
+            "outputSha256": "b63e831f7745bf51028370ecc104071eb367f9afd0e88148a155319148898f3b",
+            "sameMetadata": true
+          },
+          {
+            "index": 18,
+            "sourceSha256": "b1c65e9831b0b47d59d84850e4ae1963bfaf365df8dbd072441cd71900a3a87a",
+            "outputSha256": "b1c65e9831b0b47d59d84850e4ae1963bfaf365df8dbd072441cd71900a3a87a",
+            "sameMetadata": true
+          },
+          {
+            "index": 19,
+            "sourceSha256": "1bc239ab6351fd4ea09f656000bc5272e8f7e6e14a56fc82ca2e78514ff8878e",
+            "outputSha256": "1bc239ab6351fd4ea09f656000bc5272e8f7e6e14a56fc82ca2e78514ff8878e",
+            "sameMetadata": true
+          },
+          {
+            "index": 20,
+            "sourceSha256": "9bbc0520b1734c72f070300f4ae9127ce622c28186ee8448803d8ab780fc6a0b",
+            "outputSha256": "9bbc0520b1734c72f070300f4ae9127ce622c28186ee8448803d8ab780fc6a0b",
+            "sameMetadata": true
+          },
+          {
+            "index": 21,
+            "sourceSha256": "1e7dadfeb96d884f8ae9d9a52eb952351d2a41b2e641baad03218ad4a800c8cb",
+            "outputSha256": "1e7dadfeb96d884f8ae9d9a52eb952351d2a41b2e641baad03218ad4a800c8cb",
+            "sameMetadata": true
+          },
+          {
+            "index": 22,
+            "sourceSha256": "a6dfcf70cb0e47320dcfb6bdcef4ecb4df7cc755edcc89d2e813cb2f59121296",
+            "outputSha256": "a6dfcf70cb0e47320dcfb6bdcef4ecb4df7cc755edcc89d2e813cb2f59121296",
+            "sameMetadata": true
+          },
+          {
+            "index": 23,
+            "sourceSha256": "5ce9ddea77214466f6b3ea4bc2b8f0636e6b36b69544faf678791c6a36e9c981",
+            "outputSha256": "5ce9ddea77214466f6b3ea4bc2b8f0636e6b36b69544faf678791c6a36e9c981",
+            "sameMetadata": true
+          },
+          {
+            "index": 24,
+            "sourceSha256": "cb7e425217dc6d5e33dfa17492c058d61085bd4a5a68fc6b72aceb24e6e77600",
+            "outputSha256": "cb7e425217dc6d5e33dfa17492c058d61085bd4a5a68fc6b72aceb24e6e77600",
+            "sameMetadata": true
+          },
+          {
+            "index": 25,
+            "sourceSha256": "fa701abf3aed475645c3b096bd8a7657c12b4bf91a584b730546bd227519046f",
+            "outputSha256": "fa701abf3aed475645c3b096bd8a7657c12b4bf91a584b730546bd227519046f",
+            "sameMetadata": true
+          },
+          {
+            "index": 26,
+            "sourceSha256": "f1dea2117f4ade0839ee2474fae5a6a108a0384bac4c1b8ae06f78bc9e0f381f",
+            "outputSha256": "f1dea2117f4ade0839ee2474fae5a6a108a0384bac4c1b8ae06f78bc9e0f381f",
+            "sameMetadata": true
+          },
+          {
+            "index": 27,
+            "sourceSha256": "385a7368620820a62a053ecaf35c5f95622b27eb95d0d3e1dbad8725d4816a5e",
+            "outputSha256": "385a7368620820a62a053ecaf35c5f95622b27eb95d0d3e1dbad8725d4816a5e",
+            "sameMetadata": true
+          },
+          {
+            "index": 28,
+            "sourceSha256": "1654ea4344006f91a38dc550c20d5c2adbe2b3cb65b87208973dedfac4a7160e",
+            "outputSha256": "1654ea4344006f91a38dc550c20d5c2adbe2b3cb65b87208973dedfac4a7160e",
+            "sameMetadata": true
+          },
+          {
+            "index": 29,
+            "sourceSha256": "f2169cf4c7ffb01d41f0dbff90b6c3269472dd6234f8110836234f13339b5730",
+            "outputSha256": "f2169cf4c7ffb01d41f0dbff90b6c3269472dd6234f8110836234f13339b5730",
+            "sameMetadata": true
+          },
+          {
+            "index": 30,
+            "sourceSha256": "13f4fa417b47c826d194bd465d1823903814863e7a3fb4f71aae8fca8fee2050",
+            "outputSha256": "13f4fa417b47c826d194bd465d1823903814863e7a3fb4f71aae8fca8fee2050",
+            "sameMetadata": true
+          },
+          {
+            "index": 31,
+            "sourceSha256": "ac3cc9536dbd2669e1e8ae85019ff7d35972235dc5a3a13642847ebcc7c0a739",
+            "outputSha256": "ac3cc9536dbd2669e1e8ae85019ff7d35972235dc5a3a13642847ebcc7c0a739",
+            "sameMetadata": true
+          },
+          {
+            "index": 32,
+            "sourceSha256": "ab8e1caa0f0f14caea50fe5aeb2f3205f656469b407024f6b00320654f2e6ed0",
+            "outputSha256": "ab8e1caa0f0f14caea50fe5aeb2f3205f656469b407024f6b00320654f2e6ed0",
+            "sameMetadata": true
+          },
+          {
+            "index": 33,
+            "sourceSha256": "dbf5c060574631c116615283835a5f9341ee7932f0f136d52cb76ea0ae5429ed",
+            "outputSha256": "dbf5c060574631c116615283835a5f9341ee7932f0f136d52cb76ea0ae5429ed",
+            "sameMetadata": true
+          }
+        ],
+        "protectedAccessorCount": 31
+      },
+      "materialNames": {
+        "0": "Harbor Work Gloves (left)",
+        "1": "Harbor Work Gloves (right)",
+        "3": "Harbor Phoenix Sleeves"
+      }
+    },
+    {
+      "source": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/ak47-fire-serpent.glb",
+        "bytes": 3400016,
+        "sha256": "3591d83e3c1de5eab06d4d656fbc0d6a6a753d984df438edb97c7d0549af2550"
+      },
+      "output": {
+        "path": "games/freight-fire/assets/viewmodel-cs2/ak47-docksteel.glb",
+        "bytes": 2696768,
+        "sha256": "67bfb2db963b8cdbd3941bb0749868069efb5d6b3c4ff782c1a6c4c37234b19f"
+      },
+      "replacements": [
+        {
+          "imageIndex": 0,
+          "bufferView": 8,
+          "previous": {
+            "mimeType": "image/jpeg",
+            "width": 2048,
+            "height": 2048,
+            "bytes": 1519933,
+            "sha256": "1662ed2ce8121a9de133be8432a20ee323045ecd2f13a847bc3d8d331c5332ce"
+          },
+          "next": {
+            "mimeType": "image/jpeg",
+            "width": 2048,
+            "height": 2048,
+            "bytes": 816682,
+            "sha256": "36d0d722a087a0f51d1421f04bde42ddedc287212f84f89bfc3fd3bf036fe033"
+          },
+          "source": {
+            "provider": "imagegen",
+            "generationId": "exec-dd9ede8d-ac07-41f1-bae2-3a43741fe920",
+            "promptSummary": "Edit the original AK base-color UV atlas into original dockyard black steel, navy furniture and orange double-stripe accents; remove Fire Serpent artwork and retain every mechanical UV island.",
+            "generatedImage": {
+              "sha256": "03bdc9a576665103e064991748529cefc4a895e6725597c213b588b2a63ef087",
+              "bytes": 2591567,
+              "width": 1254,
+              "height": 1254,
+              "mimeType": "image/png"
+            },
+            "conversion": {
+              "operation": "encoding and exact UV-atlas size restoration only",
+              "codec": "JPEG",
+              "quality": 90,
+              "chromaSubsampling": "4:4:4",
+              "kernel": "lanczos3",
+              "width": 2048,
+              "height": 2048
+            },
+            "file": "docksteel-color.jpg"
+          }
+        }
+      ],
+      "geometryComparison": {
+        "identical": true,
+        "structure": {
+          "nodes": true,
+          "scenes": true,
+          "scene": true,
+          "skins": true,
+          "meshes": true,
+          "accessors": true,
+          "animations": true,
+          "textures": true,
+          "samplers": true
+        },
+        "nonImageBufferViews": [
+          {
+            "index": 0,
+            "sourceSha256": "e639c1fe01c85473b6a113d7156a5c0109adcba417bfd802ce7d4dd9db1ee72e",
+            "outputSha256": "e639c1fe01c85473b6a113d7156a5c0109adcba417bfd802ce7d4dd9db1ee72e",
+            "sameMetadata": true
+          },
+          {
+            "index": 1,
+            "sourceSha256": "a69939972143dc13b3fdaf9310456fdca223d8c552d49656953248a18b0f870b",
+            "outputSha256": "a69939972143dc13b3fdaf9310456fdca223d8c552d49656953248a18b0f870b",
+            "sameMetadata": true
+          },
+          {
+            "index": 2,
+            "sourceSha256": "3be6faf5311728a6c7e0becb9fd46363b19455ad7dad4f45b7976a1ecc9338f9",
+            "outputSha256": "3be6faf5311728a6c7e0becb9fd46363b19455ad7dad4f45b7976a1ecc9338f9",
+            "sameMetadata": true
+          },
+          {
+            "index": 3,
+            "sourceSha256": "9ca524065267ba227952c9caec17dca8a4c46d866c76c3636a8a62eaf2bcc589",
+            "outputSha256": "9ca524065267ba227952c9caec17dca8a4c46d866c76c3636a8a62eaf2bcc589",
+            "sameMetadata": true
+          },
+          {
+            "index": 4,
+            "sourceSha256": "8c69663fd0bb813dd063ef00e31ac35269d78b55ee4af8b54b938b9fb1fecab1",
+            "outputSha256": "8c69663fd0bb813dd063ef00e31ac35269d78b55ee4af8b54b938b9fb1fecab1",
+            "sameMetadata": true
+          },
+          {
+            "index": 5,
+            "sourceSha256": "e225da80342cb22f154f8e2cdda80f33bacb7069e9a7e747fe34f198b40aa608",
+            "outputSha256": "e225da80342cb22f154f8e2cdda80f33bacb7069e9a7e747fe34f198b40aa608",
+            "sameMetadata": true
+          },
+          {
+            "index": 6,
+            "sourceSha256": "af9896d1de951d0863c7bf4d71ff9eb154f13788f34f8e19635523a7c1933c88",
+            "outputSha256": "af9896d1de951d0863c7bf4d71ff9eb154f13788f34f8e19635523a7c1933c88",
+            "sameMetadata": true
+          },
+          {
+            "index": 7,
+            "sourceSha256": "815bd3657dbffeb54f5c17f9c4d51bedb5de8dbd1509aba73f9acc982b464b5e",
+            "outputSha256": "815bd3657dbffeb54f5c17f9c4d51bedb5de8dbd1509aba73f9acc982b464b5e",
+            "sameMetadata": true
+          },
+          {
+            "index": 11,
+            "sourceSha256": "cdcce772b02d1deba636971d59453ba7af46b9c2d1e041215918f72671bddff2",
+            "outputSha256": "cdcce772b02d1deba636971d59453ba7af46b9c2d1e041215918f72671bddff2",
+            "sameMetadata": true
+          }
+        ],
+        "protectedAccessorCount": 9
+      },
+      "materialNames": {
+        "0": "AK-47 | Docksteel"
+      }
+    }
+  ]
+}

@@ -36,10 +36,11 @@ try{
   const floor=new T.Mesh(new T.PlaneGeometry(30,30),new T.MeshStandardMaterial({color:'#617780',roughness:.95}));floor.rotation.x=-Math.PI/2;floor.position.y=-.035;scene.add(floor,new T.GridHelper(20,40,'#718d93','#596d72'));
   const camera=new T.PerspectiveCamera(43,1440/900,.05,100);camera.position.set(3.1,2.1,5.8);camera.lookAt(0,.9,0);
   const sample=actor=>{
-   actor.updateMatrixWorld(true);const d=actor.userData,bounds=new T.Box3();d.skin.traverse(mesh=>{if(!mesh.isSkinnedMesh)return;mesh.skeleton.update();const position=mesh.geometry.getAttribute('position');for(let i=0;i<position.count;i++)bounds.expandByPoint(mesh.getVertexPosition(i,new T.Vector3()).applyMatrix4(mesh.matrixWorld));});
+   actor.updateMatrixWorld(true);const d=actor.userData,bounds=new T.Box3(),axis=d.deathDirection?.clone().normalize()||new T.Vector3(0,0,1).applyQuaternion(actor.quaternion);let axisMin=Infinity,axisMax=-Infinity;
+   d.skin.traverse(mesh=>{if(!mesh.isSkinnedMesh)return;mesh.skeleton.update();const position=mesh.geometry.getAttribute('position'),used=mesh.geometry.index?new Set(mesh.geometry.index.array):Array.from({length:position.count},(_,i)=>i);for(const i of used){const vertex=mesh.getVertexPosition(i,new T.Vector3()).applyMatrix4(mesh.matrixWorld);bounds.expandByPoint(vertex);const projection=vertex.dot(axis);axisMin=Math.min(axisMin,projection);axisMax=Math.max(axisMax,projection);}});
    const position=name=>d.bones[name]?.getWorldPosition(new T.Vector3()),distance=(a,b)=>position(a)?.distanceTo(position(b));
    const scales=Object.values(d.bones).flatMap(bone=>bone.scale.toArray()),translations=['spine_3','neck_0','arm_lower_L','arm_lower_R'].map(name=>({name,length:d.bones[name]?.position.length(),rest:d.rest.get(d.bones[name])?.position.length()}));
-   return {bounds:{min:bounds.min.toArray(),max:bounds.max.toArray(),size:bounds.getSize(new T.Vector3()).toArray()},head:position('head_0')?.toArray(),pelvis:position('pelvis')?.toArray(),headHipDistance:distance('head_0','pelvis'),footSeparation:distance('ankle_L','ankle_R'),translations,scaleMin:Math.min(...scales),scaleMax:Math.max(...scales),finite:scales.every(Number.isFinite)&&[...bounds.min.toArray(),...bounds.max.toArray()].every(Number.isFinite),pose:d.poseStats,death:d.deathStats};
+   return {bounds:{min:bounds.min.toArray(),max:bounds.max.toArray(),size:bounds.getSize(new T.Vector3()).toArray()},axisExtent:axisMax-axisMin,head:position('head_0')?.toArray(),pelvis:position('pelvis')?.toArray(),headHipDistance:distance('head_0','pelvis'),headAnkles:['L','R'].map(side=>distance('head_0','ankle_'+side)),headHands:['L','R'].map(side=>distance('head_0','hand_'+side)),footSeparation:distance('ankle_L','ankle_R'),translations,scaleMin:Math.min(...scales),scaleMax:Math.max(...scales),finite:scales.every(Number.isFinite)&&[...bounds.min.toArray(),...bounds.max.toArray()].every(Number.isFinite),pose:d.poseStats,death:d.deathStats};
   };
   window.__animationDiagnostic={T,...characters,...weapons,renderer,scene,camera,sample};
  });
@@ -59,20 +60,26 @@ try{
   const reload=await page.evaluate(weapon=>{const q=__animationDiagnostic;q.characterEvent(q.actor,{type:'reload',weapon,time:2,until:4},2);const frames=[];for(let i=0;i<150;i++){q.updateCharacterV2(q.actor,{alive:true,grounded:true,weapon,pitch:0},1/60,2+i/60);if(i%15===0)frames.push(q.sample(q.actor));}return frames;},weapon);
   check('Reload retains body geometry '+team+'/'+weapon, reload.every(frame=>frame.finite&&frame.scaleMin>.9&&frame.headHipDistance>.45),reload.filter(frame=>!frame.finite||frame.scaleMin<=.9||frame.headHipDistance<=.45));
  }
- for(const team of [0,1])for(const crouching of [false,true])for(const fired of [false,true]){
-  const result=await page.evaluate(({team,crouching,fired})=>{
-   const q=__animationDiagnostic;q.scene.remove(q.actor);q.disposeCharacterV2(q.actor);q.actor=q.makeCharacterV2(team,q.makeWeaponV2);q.scene.add(q.actor);const state={alive:true,grounded:true,x:0,y:0,z:0,weapon:0,pitch:0,crouching};
+ for(const team of [0,1])for(const crouching of [false,true])for(const fired of [false,true])for(const direction of ['back','left','right']){
+  const result=await page.evaluate(({team,crouching,fired,direction})=>{
+   const q=__animationDiagnostic;q.scene.remove(q.actor);q.disposeCharacterV2(q.actor);q.actor=q.makeCharacterV2(team,q.makeWeaponV2);q.scene.add(q.actor);
+   const yaw=(team?-.63:.47)+(crouching?.19:0)+(fired?-.11:.08);q.actor.rotation.y=yaw;
+   const state={alive:true,grounded:true,x:0,y:0,z:0,yaw,weapon:0,pitch:0,crouching};
    for(let i=0;i<40;i++)q.updateCharacterV2(q.actor,state,1/60,i/60);if(fired){q.characterEvent(q.actor,{type:'shot',weapon:0},1);q.updateCharacterV2(q.actor,state,1/60,1);}
-   q.deathAge=0;q.deathState={...state,alive:false};return {team,crouching,fired,initial:q.sample(q.actor)};
-  },{team,crouching,fired});result.frames=[];
+   const localImpulse=new q.T.Vector3(...({back:[0,0,1],left:[-1,0,0],right:[1,0,0]}[direction]));q.actor.userData.deathDirection=localImpulse.applyQuaternion(q.actor.quaternion);q.deathDirection=direction;
+   q.deathAge=0;q.deathState={...state,id:'diagnostic-'+team+'-'+Number(crouching)+'-'+Number(fired),deathAt:1,alive:false};return {team,crouching,fired,direction,yaw,worldImpulse:q.actor.userData.deathDirection.toArray(),initial:q.sample(q.actor)};
+  },{team,crouching,fired,direction});result.frames=[];
   for(const age of [.05,.2,.45,.75,1.2,1.8,2.5,3.5]){
-   const frame=await page.evaluate(age=>{const q=__animationDiagnostic;while(q.deathAge<age-1e-6){q.updateCharacterV2(q.actor,q.deathState,1/120,1+q.deathAge);q.deathAge+=1/120;}q.camera.position.set(2.9,3.3,4.8);q.camera.lookAt(0,.35,0);document.querySelector('#caption').textContent=(q.actor.userData.team?'潜伏者':'保卫者')+' · 倒地 '+age.toFixed(2)+' 秒\n'+(q.baseline?'修复前的倒地动作':'轻量尸体 · 无横向碰撞');q.renderer.render(q.scene,q.camera);return {age,...q.sample(q.actor)};},age);
-   result.frames.push(frame);if([.45,1.2,2.5].includes(age))await shot('death-'+team+'-'+Number(crouching)+'-'+Number(fired)+'-'+age);
+   const frame=await page.evaluate(age=>{const q=__animationDiagnostic;while(q.deathAge<age-1e-6){q.updateCharacterV2(q.actor,q.deathState,1/120,1+q.deathAge);q.deathAge+=1/120;}q.camera.position.set(2.9,3.3,4.8).applyAxisAngle(new q.T.Vector3(0,1,0),q.actor.rotation.y);q.camera.lookAt(0,.35,0);document.querySelector('#caption').textContent=(q.actor.userData.team?'潜伏者':'保卫者')+' · '+({back:'后倒',left:'左侧倒',right:'右侧倒'}[q.deathDirection])+' '+age.toFixed(2)+' 秒\n'+(q.baseline?'修复前的倒地动作':'分阶段倒地 · 无横向碰撞 · '+(q.actor.userData.deathStats?.phase||''));q.renderer.render(q.scene,q.camera);return {age,...q.sample(q.actor)};},age);
+   result.frames.push(frame);if([.45,1.2,2.5].includes(age))await shot('death-'+team+'-'+Number(crouching)+'-'+Number(fired)+'-'+direction+'-'+age);
   }
   const final=result.frames.at(-1),flat=Math.max(final.bounds.size[0],final.bounds.size[2]);
-  check('Corpse remains extended and stable '+team+'/'+Number(crouching)+'/'+Number(fired),result.frames.every(frame=>frame.finite)&&final.scaleMin>.9&&final.scaleMax<1.1&&flat>1.35&&final.bounds.size[1]<.7&&final.headHipDistance>.45,{final,flat});
-  const stable=result.frames.slice(-2);check('Settled corpse freezes '+team+'/'+Number(crouching)+'/'+Number(fired),JSON.stringify(stable[0].bounds)===JSON.stringify(stable[1].bounds),stable);
-  const reset=await page.evaluate(()=>{const q=__animationDiagnostic;for(let i=0;i<40;i++)q.updateCharacterV2(q.actor,{alive:true,grounded:true,weapon:0},1/60,5+i/60);return {dead:q.actor.userData.dead,visual:q.actor.userData.visual.position.toArray(),...q.sample(q.actor)};});check('Respawn restores normal body '+team+'/'+Number(crouching)+'/'+Number(fired),!reset.dead&&reset.bounds.size[1]>1.6&&reset.headHipDistance>.5&&reset.scaleMin>.9,reset);report.deaths.push(result);
+  const label=team+'/'+Number(crouching)+'/'+Number(fired)+'/'+direction;
+  check('Corpse remains extended and supported '+label,result.frames.every(frame=>frame.finite)&&final.scaleMin>.9&&final.scaleMax<1.1&&flat>1.35&&final.axisExtent>1.65&&final.bounds.size[1]<.65&&final.headHipDistance>.69&&final.headAnkles.every(value=>value>1.6)&&final.headHands.every(value=>value>.7)&&final.bounds.min[1]>=-.012&&final.bounds.min[1]<.045,{final,flat});
+  check('Death direction and stage diagnostics match '+label,final.death?.clip==='staged-fall'&&final.death.fallDirection===direction&&[0,1,2].includes(final.death.variation)&&final.death.phase==='frozen'&&final.death.frozen&&final.death.once&&final.death.horizontalContacts===false&&final.death.collisionMode==='ground-only'&&final.death.age>=1.2&&final.death.age<=1.4,final.death);
+  const stable=result.frames.slice(-2);check('Settled corpse freezes without further contact work '+label,JSON.stringify(stable[0].bounds)===JSON.stringify(stable[1].bounds)&&stable[0].death?.contactPasses===stable[1].death?.contactPasses,stable);
+  const reset=await page.evaluate(()=>{const q=__animationDiagnostic;for(let i=0;i<40;i++)q.updateCharacterV2(q.actor,{alive:true,grounded:true,weapon:0,yaw:q.actor.rotation.y},1/60,5+i/60);return {dead:q.actor.userData.dead,deathState:q.actor.userData.deathState===null,upperMode:q.actor.userData.upperMode,upperUntil:q.actor.userData.upperUntil,visual:q.actor.userData.visual.position.toArray(),rotation:q.actor.userData.visual.rotation.toArray(),...q.sample(q.actor)};});
+  check('Respawn restores normal body and clears death state '+label,!reset.dead&&reset.deathState&&reset.death===null&&reset.upperMode===null&&reset.upperUntil===0&&reset.visual.every(value=>value===0)&&reset.bounds.size[1]>1.6&&reset.headHipDistance>.5&&reset.scaleMin>.9,reset);report.deaths.push(result);
  }
  if(!baseline){
   await page.goto(`http://127.0.0.1:${server.address().port}/games/freight-fire/?qa=1`);await page.locator('#loading').waitFor({state:'hidden',timeout:60000});await page.locator('#difficulty').selectOption('easy');await page.locator('#start').click();await page.waitForFunction(()=>__freight.snapshot?.players.find(p=>p.id===__freight.localId)?.alive&&!__freight.paused);
