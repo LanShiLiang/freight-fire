@@ -1,8 +1,9 @@
 import * as THREE from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { clone } from './vendor/SkeletonUtils.js';
-import { WEAPONS, floorAt, resolveWorldSphere } from './sim.js';
+import { WEAPONS, floorAt } from './sim.js';
 import { declareAsset, loadGLTF } from './asset-loading.js';
+import { beginCharacterDeath, advanceCharacterDeath, clearCharacterDeath } from './character-death.js';
 
 // Original CS2 SAS/Phoenix meshes and their own skeleton animations.
 // Valve retains their rights: assets/characters-cs2/README.md.
@@ -45,9 +46,14 @@ function locomotion(p) {
 function playBase(data,name) {
   if(data.currentAction===name)return;
   const wanted=data.actions[name];if(!wanted)return;
+  const transitioning=Boolean(data.currentAction);
   for(const action of Object.values(data.actions))if(action!==wanted)action.fadeOut(name==='death'?.075:.13);
   wanted.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).setLoop(name==='death'?THREE.LoopOnce:THREE.LoopRepeat,name==='death'?1:Infinity);
-  wanted.clampWhenFinished=name==='death';wanted.fadeIn(name==='death'?.075:.13).play();data.currentAction=name;
+  wanted.clampWhenFinished=name==='death';
+  // A newly spawned character has no previous live pose to crossfade from.
+  // Apply its grip immediately instead of briefly blending from the rest pose.
+  if(transitioning)wanted.fadeIn(name==='death'?.075:.13);
+  wanted.play();data.currentAction=name;
 }
 
 /** Native clips own every wrist/finger pose; weapons follow their authored wpn anchor. */
@@ -77,8 +83,15 @@ export function makeCharacterV2(team=0,makeGun) {
     const reference=source.animations.find(a=>a.name===family+'/idle');
     for(const mode of ['shoot','reload']) {
       const authored=source.animations.find(a=>a.name===family+'/'+mode);if(!authored||!reference)continue;
-      const clip=authored.clone();clip.name='upper/'+authored.name;clip.tracks=clip.tracks.filter(t=>upperNames.has(trackNode(t)));
-      THREE.AnimationUtils.makeClipAdditive(clip,0,reference,30);upperActions[family+'/'+mode]=mixer.clipAction(clip);
+      const clip=authored.clone();clip.name='upper/'+authored.name;
+      // Rifle/pistol recoil is already authored as quaternion/position deltas.
+      // Subtracting idle again cancels the upper body's bone lengths. Knife
+      // attacks and reloads are absolute poses and do need that conversion.
+      // Scale belongs to the base skeleton, never to a recoil overlay.
+      clip.tracks=clip.tracks.filter(t=>upperNames.has(trackNode(t))&&!t.name.endsWith('.scale'));
+      if(mode==='shoot'&&family!=='knife')clip.blendMode=THREE.AdditiveAnimationBlendMode;
+      else THREE.AnimationUtils.makeClipAdditive(clip,0,reference,30);
+      upperActions[family+'/'+mode]=mixer.clipAction(clip);
     }
   }
   Object.assign(group.userData,{characterV2:true,nativeCharacter:true,team,skin,visual,bones,mixer,actions,upperActions,rest,contactSamples,rawPose:new Map(),
@@ -100,9 +113,9 @@ export function characterEvent(group,event,time=0) {
 function restoreRawPose(data) {
   // AnimationMixer skips writes for constant tracks. Restore the previous raw
   // pose before aiming, so aiming never accumulates on those tracks.
-  for(const [bone,pose]of data.rawPose){bone.quaternion.copy(pose.q);bone.position.copy(pose.p);}
+  for(const [bone,pose]of data.rawPose){bone.quaternion.copy(pose.q);bone.position.copy(pose.p);bone.scale.copy(pose.s);}
 }
-function recordRawPose(data) {for(const bone of Object.values(data.bones)){const previous=data.rawPose.get(bone);if(previous){previous.q.copy(bone.quaternion);previous.p.copy(bone.position);}else data.rawPose.set(bone,{q:bone.quaternion.clone(),p:bone.position.clone()});}}
+function recordRawPose(data) {for(const bone of Object.values(data.bones)){const previous=data.rawPose.get(bone);if(previous){previous.q.copy(bone.quaternion);previous.p.copy(bone.position);previous.s.copy(bone.scale);}else data.rawPose.set(bone,{q:bone.quaternion.clone(),p:bone.position.clone(),s:bone.scale.clone()});}}
 function solveGripArm(data,side,target,orientation) {
   const shoulder=data.bones['arm_upper_'+side],elbow=data.bones['arm_lower_'+side],hand=data.bones['hand_'+side];if(!shoulder||!elbow||!hand)return;
   const a=shoulder.getWorldPosition(vector()),b=elbow.getWorldPosition(vector()),c=hand.getWorldPosition(vector()),upper=a.distanceTo(b),lower=b.distanceTo(c),towards=target.clone().sub(a),distance=clamp(towards.length(),Math.abs(upper-lower)+.0001,upper+lower-.0001);towards.normalize();
@@ -149,35 +162,15 @@ function updateGun(group,p,dt,time) {
   }
 }
 
-function groundCorpse(group,p) {
-  const d=group.userData;
-  // Recompute vertical contact from the current authored frame. Carrying the
-  // previous correction forward makes the final body hover above the deck.
-  d.visual.position.y=0;
-  group.updateMatrixWorld(true);d.skin.traverse(o=>{if(o.isSkinnedMesh)o.skeleton.update();});
-  const bounds=new THREE.Box3();for(const {mesh,indices}of d.contactSamples)for(const index of indices)bounds.expandByPoint(mesh.getVertexPosition(index,vector()).applyMatrix4(mesh.matrixWorld));
-  const ground=floorAt(p.x,p.z,(p.y||0)+.22);
-  const minimum=ground+.025,lift=Math.max(0,minimum-bounds.min.y);
-  if(lift>0)d.visual.position.y+=Math.min(.55,lift);
-  const contacts=['pelvis','spine_3','head_0','leg_lower_L','leg_lower_R','arm_lower_L','arm_lower_R'];
-  const push=vector();let count=0;
-  for(const name of contacts){const bone=d.bones[name];if(!bone)continue;const original=bone.getWorldPosition(vector()),resolved=original.clone();resolveWorldSphere(resolved,name==='pelvis'?.17:name==='head_0'?.12:.09,null);const delta=resolved.sub(original);delta.y=0;if(delta.lengthSq()>1e-7){push.add(delta);count++;}}
-  if(count){push.divideScalar(count).clampLength(0,.2);const q=group.getWorldQuaternion(new THREE.Quaternion()).invert();d.visual.position.add(push.applyQuaternion(q));}
-  group.updateMatrixWorld(true);
-  d.deathStats={age:d.deathAge,clip:'death',source:'Valve CS2 death_chest_a',once:true,groundContacts:true,contactVertices:d.contactSamples.reduce((n,s)=>n+s.indices.length,0),frozen:d.deathAge>=d.actions.death.getClip().duration};
-}
-
-/** Caller owns living position/yaw. Authored death plays once, holds until respawn. */
+/** Caller owns living position/yaw. The relaxed fall holds its pose until respawn. */
 export function updateCharacterV2(group,p,dt=1/60,time) {
   const d=group.userData;if(!d.characterV2)return;dt=clamp(Number(dt)||0,0,.1);d.elapsed+=dt;time=Number.isFinite(time)?time:d.elapsed;
-  restoreRawPose(d);
   if(p.alive===false) {
-    if(!d.dead){d.dead=true;d.deathAge=0;d.deathOrigin=group.position.clone();d.deathYaw=group.rotation.y;for(const a of Object.values(d.upperActions))a.stop();playBase(d,'death');}
-    group.position.copy(d.deathOrigin);group.rotation.y=d.deathYaw;d.deathAge+=dt;d.mixer.update(dt);
-    recordRawPose(d);
-    d.visual.visible=true;groundCorpse(group,p);if(d.gun)d.gun.visible=false;return;
+    if(!d.dead){d.dead=true;beginCharacterDeath(group,p,floorAt(p.x,p.z,(p.y||0)+.22));}
+    advanceCharacterDeath(group,dt);return;
   }
-  if(d.dead){d.dead=false;d.deathStats=null;d.raisedWeight=0;d.raisedUntil=0;d.visual.position.set(0,0,0);d.visual.rotation.set(0,0,0);for(const a of Object.values(d.actions))a.stop();d.currentAction='';d.rawPose.clear();for(const [bone,r]of d.rest){bone.position.copy(r.position);bone.quaternion.copy(r.quaternion);bone.scale.copy(r.scale);}}
+  if(d.dead){d.dead=false;clearCharacterDeath(group);d.raisedWeight=0;d.raisedUntil=0;d.visual.position.set(0,0,0);d.visual.rotation.set(0,0,0);for(const a of Object.values(d.actions))a.stop();d.currentAction='';d.rawPose.clear();for(const [bone,r]of d.rest){bone.position.copy(r.position);bone.quaternion.copy(r.quaternion);bone.scale.copy(r.scale);}}
+  restoreRawPose(d);
   d.visual.visible=true;const wanted=locomotion(p);playBase(d,wanted);
   const speed=Math.hypot(p.vx||0,p.vz||0),moving=speed>.25;
   d.actions[wanted]?.setEffectiveTimeScale(moving?clamp(speed/(p.crouching?2.4:p.walking?3:5.5),.6,1.25):1);
@@ -189,6 +182,7 @@ export function updateCharacterV2(group,p,dt=1/60,time) {
 export function disposeCharacterV2(group) {
   const d=group?.userData;if(!d?.characterV2||d.disposed)return;d.disposed=true;
   d.mixer.stopAllAction();d.mixer.uncacheRoot(d.skin);const skeletons=new Set();group.traverse(o=>{if(o.skeleton&&!skeletons.has(o.skeleton)){skeletons.add(o.skeleton);o.skeleton.dispose();}});
+  clearCharacterDeath(group);
   d.rawPose.clear();d.rest.clear();d.contactSamples=[];
 }
 
