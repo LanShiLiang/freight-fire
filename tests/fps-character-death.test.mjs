@@ -105,7 +105,10 @@ test('death builds genuine fifteen-body Cannon worlds with anatomical joint cons
     assert.equal(state.joints.filter(joint=>joint.constraint instanceof CANNON.ConeTwistConstraint).length,10);
     assert.equal(state.world.gravity.y,-9.81);assert.ok(state.world.bodies.filter(body=>body.mass===0).every(body=>body.shapes[0] instanceof CANNON.Plane));
     assert.equal(state.world.allowSleep,false);assert.ok(state.bodies.every(body=>!body.allowSleep),'Connected limbs must not become sleeping solver anchors independently');
-    assert.equal(state.bindings.filter(({body})=>body.shapes[0] instanceof CANNON.Cylinder).length,10,'Eight limbs and both trunk segments use rounded compound proxies');
+    assert.equal(state.bindings.filter(({body})=>body.shapes[0] instanceof CANNON.Cylinder).length,8,'Upper thighs use source-fitted hulls; six other limbs and both trunk segments use rounded compound proxies');
+    const thighs=state.bindings.filter(({bone})=>/^leg_upper_/.test(bone.name));assert.equal(thighs.length,2);assert.ok(thighs.every(({body})=>body.shapes.length===1&&body.shapes[0] instanceof CANNON.ConvexPolyhedron&&body.mass===7.5&&body.material.name==='corpse'));
+    for(const {bone,body}of state.bindings)assert.deepEqual([body.collisionFilterGroup,body.collisionFilterMask],/^(leg_|ankle_)/.test(bone.name)?[4,7]:/^(arm_|hand_)/.test(bone.name)?[8,3]:[2,13]);
+    assert.ok(state.joints.every(joint=>joint.constraint.collideConnected===false));
     for(const {bone,body}of state.bindings)if(bone.name.startsWith('hand_'))assert.equal(body.material.name,'glove');
     const deckContacts=state.world.contactmaterials.filter(item=>item.materials.some(material=>material.name==='deck'));
     assert.equal(deckContacts.length,3);for(const contact of deckContacts)assert.equal(contact.friction,contact.materials.some(material=>material.name==='glove')?.03:contact.materials.some(material=>material.name==='boot')?.02:.15);
@@ -164,10 +167,12 @@ test('exact public seated and shoulder supports fall naturally while their forme
 });
 
 test('only a slowly changing loaded sleeve/ground brace unlocks passive cloth and waist motion',async()=>{
-  for(const name of ['freight-death-shoulder-support.json','freight-death-seated-support.json','freight-death-running-tripod.json','native-east-run-left']){
+  for(const name of ['freight-death-shoulder-support.json','freight-death-seated-support.json','freight-death-running-tripod.json','native-east-run-left','native-north-run-back']){
     let actor,fixture;
     if(name==='native-east-run-left'){
       actor=await character(0,{yaw:.47});actor.position.set(0,0,0);await animate(actor,'run:e:.5');actor.userData.lastLivingVelocity=new THREE.Vector3(2,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),.47);actor.userData.deathDirection=directionVector('left',.47);fixture={initial:{player:{deathWeapon:1},ground:0}};
+    }else if(name==='native-north-run-back'){
+      actor=await character(1,{yaw:-.63});actor.position.set(0,0,0);await animate(actor,'run:n:.9');actor.userData.lastLivingVelocity=new THREE.Vector3(0,0,-2).applyAxisAngle(new THREE.Vector3(0,1,0),-.63);actor.userData.deathDirection=directionVector('back',-.63);fixture={initial:{player:{deathWeapon:1},ground:0}};
     }else({actor,fixture}=await capturedCharacter(name));const data=actor.userData;beginCharacterDeath(actor,fixture.initial.player,fixture.initial.ground);
     const state=data.deathState,world=state.world,waist=state.joints.find(joint=>joint.name==='spine_0'),materials=world.contactmaterials;
     assert.equal(waist.angle,45*Math.PI/180);assert.equal(waist.constraint.angle,waist.angle);
@@ -180,7 +185,10 @@ test('only a slowly changing loaded sleeve/ground brace unlocks passive cloth an
       if(data.deathStats.supportedClothSlip&&state.world){
         measuredRelease=true;const proof=data.deathStats.supportReleaseProof;
         assert.ok(proof.age>1&&proof.sustainedSeconds>=.02&&proof.torsoRatio>.6&&Math.abs(proof.tiltRate)<.2);
-        assert.ok(proof.armGroundLoad>5&&proof.sleeveChestLoad>5&&proof.hipSpeed<.6&&proof.chestSpeed<.6&&proof.hipAngularSpeed<1.5&&proof.chestAngularSpeed<1.5);
+        assert.ok(proof.armGroundLoad>5&&proof.sleeveTrunkLoad>5&&proof.sleeveChestLoad>=0&&proof.sleevePelvisLoad>=0&&proof.hipSpeed<.6&&proof.chestSpeed<.6&&proof.hipAngularSpeed<1.5&&proof.chestAngularSpeed<1.5);
+        assert.equal(proof.sleeveTrunkLoad,Math.max(proof.sleeveChestLoad,proof.sleevePelvisLoad));
+        if(name==='native-north-run-back')assert.ok(proof.sleeveChestLoad===0&&proof.sleevePelvisLoad>5,'The recorded sleeve support comes from the pelvis, not a relabelled chest contact');
+        if(name==='freight-death-shoulder-support.json')assert.ok(proof.sleeveChestLoad>5&&proof.sleevePelvisLoad===0,'The independent chest support remains distinguishable');
         assert.ok(Object.values(proof).every(Number.isFinite),'Trigger evidence contains scalars only');
         assert.equal(waist.angle,60*Math.PI/180);assert.equal(waist.constraint.angle,waist.angle);
         for(const cm of materials){const deck=cm.materials.some(m=>m.name==='deck');assert.equal(cm.friction,deck&&!cm.materials.some(m=>m.name==='glove')?(cm.materials.some(m=>m.name==='boot')?.02:.15):0);}
@@ -190,11 +198,36 @@ test('only a slowly changing loaded sleeve/ground brace unlocks passive cloth an
         advanceCharacterDeath(actor,0);assert.equal(state.supportSlide.hold,hold);assert.equal(data.deathStats.physicsSteps,steps);assert.equal(data.deathStats.contactPasses,passes);assert.ok(point(actor,'head_0').equals(pose));
       }
     }
-    assert.equal(measuredRelease,name==='native-east-run-left');assert.equal(data.deathStats.supportedClothSlip,measuredRelease);
+    assert.equal(measuredRelease,name==='native-north-run-back'||name==='freight-death-shoulder-support.json');assert.equal(data.deathStats.supportedClothSlip,measuredRelease);
     assert.equal(state.world,null);assert.equal(state.supportSlide,null);assert.equal(state.material,null);assert.equal(state.handMaterial,null);assert.equal(state.bootMaterial,null);
     const proof=data.deathStats.supportReleaseProof,steps=data.deathStats.physicsSteps;advanceCharacterDeath(actor,.1);
     assert.deepEqual(data.deathStats.supportReleaseProof,proof);assert.equal(data.deathStats.physicsSteps,steps);clearCharacterDeath(actor);assert.equal(data.deathState,null);assert.equal(data.deathStats,null);
   }
+});
+
+test('exact public lateral double-knee pile unfolds through real non-adjacent leg contact without changing source proportions',async()=>{
+  const {actor,fixture}=await capturedCharacter('freight-death-lateral-double-knee-support.json'),data=actor.userData,initial=point(actor,'pelvis');
+  const originalIndices=data.contactSamples.map(sample=>[...sample.indices]);assert.equal(originalIndices.flat().length,1146);
+  beginCharacterDeath(actor,fixture.initial.player,fixture.initial.ground);assert.ok(point(actor,'pelvis').distanceTo(initial)<1e-4);
+  assert.deepEqual(data.contactSamples.map(sample=>sample.indices),originalIndices);
+  const state=data.deathState,world=state.world,legBodies=new Set(state.bindings.filter(binding=>/^(leg_|ankle_)/.test(binding.bone.name)).map(binding=>binding.body));
+  let actualLegContact=false,maxGap=0;
+  for(let frame=0;frame<360;frame++){
+    advanceCharacterDeath(actor,1/120);checkOffsets(actor);maxGap=Math.max(maxGap,data.deathStats.maxJointGap);
+    for(const contact of world.contacts){
+      if(legBodies.has(contact.bi)&&legBodies.has(contact.bj)&&contact.multiplier>0)actualLegContact=true;
+      assert.ok(!world.constraints.some(joint=>!joint.collideConnected&&((joint.bodyA===contact.bi&&joint.bodyB===contact.bj)||(joint.bodyA===contact.bj&&joint.bodyB===contact.bi))),'Adjacent constrained links never collide');
+      if(contact.bi.mass===0||contact.bj.mass===0)assert.ok((contact.bi.mass===0?contact.bi:contact.bj).shapes[0] instanceof CANNON.Plane,'Only this corpse\'s private deck is an external contact');
+    }
+  }
+  const geometry=corpseGeometry(actor),stats=data.deathStats;assert.ok(actualLegContact,'The actual solver receives leg-to-leg contacts instead of a pose correction');
+  assert.ok(spreadGeometry(geometry),JSON.stringify({geometry,stats}));assert.ok(maxGap<.055&&stats.maxJointGap<.03&&Math.max(stats.maxBendViolation,stats.maxTwistViolation,stats.maxSwingViolation)<.06);
+  assert.ok(stats.age<=2.8&&stats.physicsSteps<=504);assert.equal(state.world,null);assert.equal(state.bootMaterial,null);assert.equal(state.supportSlide,null);
+  const frozenBounds=bounds(actor),steps=stats.physicsSteps,passes=stats.contactPasses;for(let i=0;i<100;i++)advanceCharacterDeath(actor,.1);
+  assert.deepEqual(bounds(actor),frozenBounds);assert.equal(data.deathStats.physicsSteps,steps);assert.equal(data.deathStats.contactPasses,passes);
+  for(const pose of fixture.foldedPose){const bone=data.bones[pose.name];bone.position.fromArray(pose.position);bone.quaternion.fromArray(pose.rotation);bone.scale.fromArray(pose.scale);}actor.updateMatrixWorld(true);checkOffsets(actor);
+  const former=corpseGeometry(actor);assert.ok(former.headHip>.60&&former.legSpans.every(value=>value<.56)&&Math.max(former.size[0],former.size[2])<1.2);assert.equal(spreadGeometry(former),false,'The exact former bilateral knee pile is still rejected');
+  clearCharacterDeath(actor);assert.equal(data.deathState,null);assert.equal(data.deathStats,null);
 });
 
 test('exact public boot fit removes empty underground corners and releases tightly curled running knees',async()=>{
@@ -381,4 +414,50 @@ test('shallow initial deck penetration and airborne momentum land without physic
     assert.equal(data.deathStats.frozen,true);assert.equal(data.deathState.world,null);const box=bounds(actor);assert.ok(box.min.y>-.055&&box.min.y<.09,JSON.stringify({team,offset,bounds:box.min.toArray()}));
     const geometry=corpseGeometry(actor);assert.ok(geometry.torsoVerticalRatio<=.6,JSON.stringify(geometry));
   }
+});
+
+
+test('private corpse SAT caches exactly match official Cannon axes on real SAS and Phoenix shapes',async()=>{
+  const prototype=CANNON.ConvexPolyhedron.prototype,official=prototype.findSeparatingAxis,officialDepth=prototype.testSepAxis,officialProject=CANNON.ConvexPolyhedron.project;
+  const exact=(actual,expected,label)=>assert.ok(Object.is(actual,expected),label+' (including signed zero)');
+  const exactVector=(actual,expected,label)=>{for(const axis of ['x','y','z'])exact(actual[axis],expected[axis],label+'.'+axis);};
+  let comparisons=0;
+  for(const team of [0,1]){
+    const actor=await character(team,{yaw:team?-.63:.47});await animate(actor,team?'run:n:.9':'idle');
+    beginCharacterDeath(actor,{},0);
+    try{
+      const state=actor.userData.deathState,bodyPoses=state.bodies.map(body=>[...body.position.toArray(),...body.quaternion.toArray()]);
+      const collider=name=>{
+        const {body}=state.bindings.find(binding=>binding.bone.name===name),raw=body.shapes[0];
+        const shape=raw instanceof CANNON.ConvexPolyhedron?raw:raw.convexPolyhedronRepresentation;
+        assert.ok(shape instanceof CANNON.ConvexPolyhedron,name+' has a real convex collider');
+        assert.ok(Object.hasOwn(shape,'findSeparatingAxis'),name+' uses its private SAT cache');
+        assert.notEqual(shape.findSeparatingAxis,official);
+        const position=body.quaternion.vmult(body.shapeOffsets[0],new CANNON.Vec3());position.vadd(body.position,position);
+        const quaternion=body.quaternion.mult(body.shapeOrientations[0],new CANNON.Quaternion());
+        return {shape,position,quaternion};
+      };
+      for(const names of [['leg_upper_L','leg_upper_R'],['ankle_L','ankle_R'],['leg_upper_L','spine_0'],['hand_L','ankle_R']]){
+        const a=collider(names[0]),b=collider(names[1]);
+        for(const mode of ['actual','same-centre','separated']){
+          const positionA=a.position.clone(),positionB=mode==='same-centre'?a.position.clone():b.position.clone(),quaternionA=a.quaternion.clone(),quaternionB=b.quaternion.clone();
+          if(mode==='separated')positionB.vadd(new CANNON.Vec3(5,0,0),positionB);
+          const poseArguments=[...positionA.toArray(),...quaternionA.toArray(),...positionB.toArray(),...quaternionB.toArray()];
+          for(const [faceListA,faceListB]of [[undefined,undefined],[a.shape.faces.map((_,index)=>index).slice(0,3),undefined],[undefined,b.shape.faces.map((_,index)=>index).slice(0,3)]]){
+            const label=JSON.stringify({team,names,mode,faceListA,faceListB}),expectedAxis=new CANNON.Vec3(.125,-.25,.5),actualAxis=expectedAxis.clone();
+            const expected=official.call(a.shape,b.shape,positionA,quaternionA,positionB,quaternionB,expectedAxis,faceListA,faceListB);
+            const actual=a.shape.findSeparatingAxis(b.shape,positionA,quaternionA,positionB,quaternionB,actualAxis,faceListA,faceListB);
+            exact(actual,expected,label+'.result');exactVector(actualAxis,expectedAxis,label+'.axis');comparisons++;
+            const after=[...positionA.toArray(),...quaternionA.toArray(),...positionB.toArray(),...quaternionB.toArray()];
+            after.forEach((value,index)=>exact(value,poseArguments[index],label+'.poseArgument['+index+']'));
+          }
+        }
+      }
+      state.bodies.forEach((body,index)=>[...body.position.toArray(),...body.quaternion.toArray()].forEach((value,component)=>exact(value,bodyPoses[index][component],'Physical body pose remains unchanged')));
+    }finally{clearCharacterDeath(actor);}
+    assert.equal(prototype.findSeparatingAxis,official,'Official global SAT prototype is unchanged');
+    assert.equal(prototype.testSepAxis,officialDepth,'Official global projection depth method is unchanged');
+    assert.equal(CANNON.ConvexPolyhedron.project,officialProject,'Official global projection is unchanged');
+  }
+  assert.equal(comparisons,72,'Both actual rigs cover overlap, tie, separation and both face-list branches');
 });

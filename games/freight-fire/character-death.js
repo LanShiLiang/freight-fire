@@ -143,6 +143,145 @@ function hinge(state,a,b,pivot,maxAngle,fallbackAxis){
 
 // A tiny incremental hull of the existing real weighted boot samples. This
 // removes the oriented box's empty corner that was 15 cm under the deck.
+// Per-call SAT projection frames retain Cannon's exact multiplication order.
+// Cache only pose-invariant quaternion/origin transforms within this pair;
+// every real vertex, face, edge, separating axis and clipping face is preserved.
+function projectionFrame(shape,position,quaternion){
+  const origin=new CANNON.Vec3();origin.vsub(position,origin);
+  quaternion.conjugate(new CANNON.Quaternion()).vmult(origin,origin);
+  const coordinates=new Float64Array(shape.vertices.length*3);for(let i=0;i<shape.vertices.length;i++){const vertex=shape.vertices[i];coordinates[i*3]=vertex.x;coordinates[i*3+1]=vertex.y;coordinates[i*3+2]=vertex.z;}
+  return {vertices:shape.vertices,coordinates,origin,axis:new CANNON.Vec3(),result:[0,0],rotation:new CANNON.Quaternion(quaternion.x,quaternion.y,quaternion.z,-quaternion.w)};
+}
+function cachedProjection(axis,frame){
+  frame.rotation.vmult(axis,frame.axis);const add=frame.origin.dot(frame.axis),coordinates=frame.coordinates,x=frame.axis.x,y=frame.axis.y,z=frame.axis.z;
+  let min=coordinates[0]*x+coordinates[1]*y+coordinates[2]*z,max=min;
+  for(let i=3;i<coordinates.length;i+=3){const value=coordinates[i]*x+coordinates[i+1]*y+coordinates[i+2]*z;if(value>max)max=value;if(value<min)min=value;}
+  min-=add;max-=add;if(min>max){const swap=min;min=max;max=swap;}frame.result[0]=max;frame.result[1]=min;return frame.result;
+}
+function cachedSeparationDepth(axis,frameA,frameB){
+  const [maxA,minA]=cachedProjection(axis,frameA),[maxB,minB]=cachedProjection(axis,frameB);
+  if(maxA<minB||maxB<minA)return false;const a=maxA-minB,b=maxB-minA;return a<b?a:b;
+}
+function cachedSeparatingAxis(hullB, posA, quatA, posB, quatB, target, faceListA, faceListB) {
+    const faceANormalWS3 = new CANNON.Vec3();
+    const Worldnormal1 = new CANNON.Vec3();
+    const deltaC = new CANNON.Vec3();
+    const worldEdge0 = new CANNON.Vec3();
+    const worldEdge1 = new CANNON.Vec3();
+    const Cross = new CANNON.Vec3();
+    let dmin = Number.MAX_VALUE;
+    const hullA = this;
+    const frameA=projectionFrame(hullA,posA,quatA),frameB=projectionFrame(hullB,posB,quatB);
+
+    if (!hullA.uniqueAxes) {
+      const numFacesA = faceListA ? faceListA.length : hullA.faces.length; // Test face normals from hullA
+
+      for (let i = 0; i < numFacesA; i++) {
+        const fi = faceListA ? faceListA[i] : i; // Get world face normal
+
+        faceANormalWS3.copy(hullA.faceNormals[fi]);
+        quatA.vmult(faceANormalWS3, faceANormalWS3);
+        const d = cachedSeparationDepth(faceANormalWS3,frameA,frameB);
+
+        if (d === false) {
+          return false;
+        }
+
+        if (d < dmin) {
+          dmin = d;
+          target.copy(faceANormalWS3);
+        }
+      }
+    } else {
+      // Test unique axes
+      for (let i = 0; i !== hullA.uniqueAxes.length; i++) {
+        // Get world axis
+        quatA.vmult(hullA.uniqueAxes[i], faceANormalWS3);
+        const d = cachedSeparationDepth(faceANormalWS3,frameA,frameB);
+
+        if (d === false) {
+          return false;
+        }
+
+        if (d < dmin) {
+          dmin = d;
+          target.copy(faceANormalWS3);
+        }
+      }
+    }
+
+    if (!hullB.uniqueAxes) {
+      // Test face normals from hullB
+      const numFacesB = faceListB ? faceListB.length : hullB.faces.length;
+
+      for (let i = 0; i < numFacesB; i++) {
+        const fi = faceListB ? faceListB[i] : i;
+        Worldnormal1.copy(hullB.faceNormals[fi]);
+        quatB.vmult(Worldnormal1, Worldnormal1);
+        const d = cachedSeparationDepth(Worldnormal1,frameA,frameB);
+
+        if (d === false) {
+          return false;
+        }
+
+        if (d < dmin) {
+          dmin = d;
+          target.copy(Worldnormal1);
+        }
+      }
+    } else {
+      // Test unique axes in B
+      for (let i = 0; i !== hullB.uniqueAxes.length; i++) {
+        quatB.vmult(hullB.uniqueAxes[i], Worldnormal1);
+        const d = cachedSeparationDepth(Worldnormal1,frameA,frameB);
+
+        if (d === false) {
+          return false;
+        }
+
+        if (d < dmin) {
+          dmin = d;
+          target.copy(Worldnormal1);
+        }
+      }
+    } // Test edges
+
+
+    const edgesB=hullB.uniqueEdges.map(edge=>quatB.vmult(edge,new CANNON.Vec3()));
+    for (let e0 = 0; e0 !== hullA.uniqueEdges.length; e0++) {
+      // Get world edge
+      quatA.vmult(hullA.uniqueEdges[e0], worldEdge0);
+
+      for (let e1 = 0; e1 !== hullB.uniqueEdges.length; e1++) {
+        // Get world edge 2
+        worldEdge1.copy(edgesB[e1]);
+        worldEdge0.cross(worldEdge1, Cross);
+
+        if (!Cross.almostZero()) {
+          Cross.normalize();
+          const dist = cachedSeparationDepth(Cross,frameA,frameB);
+
+          if (dist === false) {
+            return false;
+          }
+
+          if (dist < dmin) {
+            dmin = dist;
+            target.copy(Cross);
+          }
+        }
+      }
+    }
+
+    posB.vsub(posA, deltaC);
+
+    if (deltaC.dot(target) > 0.0) {
+      target.negate(target);
+    }
+
+    return true;
+  }
+
 function fittedBootHull(points,padding){
   const center=new THREE.Box3().setFromPoints(points).getCenter(new THREE.Vector3()),vertices=[];
   for(const source of points){const point=source.clone().sub(center);if(padding&&point.length()>1e-5)point.addScaledVector(point.clone().normalize(),padding);if(!vertices.some(v=>v.distanceToSquared(point)<1e-10))vertices.push(point);}
@@ -169,13 +308,17 @@ function fittedBootHull(points,padding){
   const polygons=groups.map(group=>{const edges=new Map();for(const f of group.faces)for(let e=0;e<3;e++){const a=f.indices[e],b=f.indices[(e+1)%3],key=Math.min(a,b)+','+Math.max(a,b);if(edges.has(key))edges.delete(key);else edges.set(key,[a,b]);}const boundary=[...edges.values()],polygon=[boundary[0][0]];let current=boundary[0][1];while(current!==polygon[0]&&polygon.length<=boundary.length){polygon.push(current);const next=boundary.find(e=>e[0]===current);if(!next)return group.faces.map(f=>f.indices);current=next[1];}return [polygon];}).flat();
   const used=[...new Set(polygons.flat())],remap=new Map(used.map((old,index)=>[old,index]));
   const shape=new CANNON.ConvexPolyhedron({vertices:used.map(index=>cv(vertices[index])),faces:polygons.map(f=>f.map(index=>remap.get(index)))});
+  // SAT edge axes are undirected. Keep the first exact direction, removing
+  // its opposite duplicate without changing vertices, faces or collision fit.
+  const edges=[];for(const edge of shape.uniqueEdges)if(!edges.some(other=>Math.abs(edge.x+other.x)<1e-12&&Math.abs(edge.y+other.y)<1e-12&&Math.abs(edge.z+other.z)<1e-12))edges.push(edge);
+  shape.uniqueEdges=edges;
   return {shape,center};
 }
 
 function fitShapes(group,state){
   const data=group.userData,byBone=new Map(state.bindings.map(binding=>[binding.bone,binding])),owner=new Map();
   for(const bone of Object.values(data.bones)){let current=bone;while(current&&!byBone.has(current))current=current.parent;owner.set(bone,byBone.get(current));}
-  for(const binding of state.bindings){binding.bounds=new THREE.Box3();binding.hullPoints=/^ankle_/.test(binding.bone.name)?[]:null;binding.inverseBody=worldQuaternion(binding.bone).invert();binding.inverseShape=binding.orientation.clone().invert();}
+  for(const binding of state.bindings){binding.bounds=new THREE.Box3();binding.hullPoints=/^(ankle_|leg_upper_)/.test(binding.bone.name)?[]:null;binding.inverseBody=worldQuaternion(binding.bone).invert();binding.inverseShape=binding.orientation.clone().invert();}
   const point=new THREE.Vector3();let vertices=0;
   for(const {mesh,indices}of data.contactSamples||[]){
     mesh.skeleton?.update();const joints=mesh.geometry.getAttribute('skinIndex'),weights=mesh.geometry.getAttribute('skinWeight');
@@ -193,7 +336,7 @@ function fitShapes(group,state){
     half.x=Math.max(.025,half.x);half.y=Math.max(.03,half.y);half.z=Math.max(.025,half.z);
     binding.body.removeShape(binding.body.shapes[0]);
     const trunk=binding.bone.name==='pelvis'||binding.bone.name==='spine_0';
-    const hull=binding.hullPoints?fittedBootHull(binding.hullPoints,0.008):null;
+    const hull=binding.hullPoints?fittedBootHull(binding.hullPoints,/^ankle_/.test(binding.bone.name)?0.008:.008):null;
     if(hull){binding.body.addShape(hull.shape,cv(hull.center.applyQuaternion(binding.orientation)),cq(binding.orientation));}
     else if(trunk||/^(arm_|leg_)/.test(binding.bone.name)){
       // Rounded limbs roll at the deck instead of stacking their flat box
@@ -209,6 +352,9 @@ function fitShapes(group,state){
     }else binding.body.addShape(new CANNON.Box(cv(half)),cv(center),cq(binding.orientation));
     delete binding.bounds;delete binding.hullPoints;delete binding.inverseBody;delete binding.inverseShape;
   }
+  // Install on this corpse's actual convex shapes only, never a vendor
+  // prototype or another game's physics. Box narrowphase uses its own hull.
+  for(const {body}of state.bindings)for(const shape of body.shapes){const hull=shape instanceof CANNON.ConvexPolyhedron?shape:shape.convexPolyhedronRepresentation;if(hull)hull.findSeparatingAxis=cachedSeparatingAxis;}
   state.contactVertices=vertices;
 }
 
@@ -251,7 +397,7 @@ function buildRig(group,state){
   // adding any wall, player, or other-corpse collision volumes to the scene.
   for(const {bone,body}of state.bindings){
     const leg=/^(leg_|ankle_)/.test(bone.name),arm=/^(arm_|hand_)/.test(bone.name);
-    body.collisionFilterGroup=leg?4:arm?8:2;body.collisionFilterMask=leg||arm?3:13;
+    body.collisionFilterGroup=leg?4:arm?8:2;body.collisionFilterMask=leg?7:arm?3:13;
     if(bone.name.startsWith('hand_'))body.material=state.handMaterial;if(bone.name.startsWith('ankle_'))body.material=state.bootMaterial;
   }
   state.bindings.sort((a,b)=>a.depth-b.depth);
@@ -335,7 +481,7 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
   // old box's empty underground corners. Their separate .02 deck friction
   // lets a bent shoe slide while cloth keeps .15 and normal contacts stay firm.
   for(const other of [material,handMaterial,bootMaterial])world.addContactMaterial(new CANNON.ContactMaterial(bootMaterial,other,{friction:.08,restitution:0,contactEquationStiffness:5e4,contactEquationRelaxation:8,frictionEquationStiffness:5e4,frictionEquationRelaxation:8}));
-  world.addContactMaterial(new CANNON.ContactMaterial(bootMaterial,floorMaterial,{friction:0.02,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
+  world.addContactMaterial(new CANNON.ContactMaterial(bootMaterial,floorMaterial,{friction:.02,restitution:0,contactEquationStiffness:2e7,contactEquationRelaxation:12,frictionEquationStiffness:2e7,frictionEquationRelaxation:4}));
   const plane=new CANNON.Body({mass:0,material:floorMaterial,shape:new CANNON.Plane(),position:new CANNON.Vec3(0,Number.isFinite(ground)?ground:0,0),collisionFilterGroup:1,collisionFilterMask:14});
   plane.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);world.addBody(plane);
   const state={age:0,accumulator:0,frozen:false,world,material,handMaterial,bootMaterial,poses,player,neutral,bodies:[],bindings:[],joints:[],ground:Number.isFinite(ground)?ground:0,
@@ -347,7 +493,7 @@ export function beginCharacterDeath(group,player={},ground=Number(player.y)||0){
 
 // A dead glove/cloth support can become a static tripod between the rounded
 // proxies even though the source limbs are relaxed. A measured persistent,
-// slowly changing sleeve/chest and arm/deck brace unlocks tangential friction
+// slowly changing sleeve/trunk and arm/deck brace unlocks tangential friction
 // and the waist's passive swing. Normal contacts, gravity and joint limits
 // remain active; no body position, orientation, target pose or force is set.
 function allowSupportedClothSlide(state,advance=true){
@@ -365,12 +511,14 @@ function allowSupportedClothSlide(state,advance=true){
   support.headPoint.vsub(support.hipPoint,support.delta);
   const ratio=Math.abs(support.delta.y)/Math.max(1e-8,support.delta.length());
   if(advance){const rate=support.previousRatio===undefined?0:(ratio-support.previousRatio)/STEP;support.tiltRate=(support.tiltRate||0)*.85+rate*.15;support.previousRatio=ratio;}
-  let armLoad=0,sleeveLoad=0;
+  let armLoad=0,sleeveChestLoad=0,sleevePelvisLoad=0;
   for(const contact of state.world.contacts){
     if(contact.multiplier<=5)continue;
     if((contact.bi.mass===0&&support.arms.has(contact.bj))||(contact.bj.mass===0&&support.arms.has(contact.bi)))armLoad=Math.max(armLoad,contact.multiplier);
-    if((contact.bi===chest.body&&support.forearms.has(contact.bj))||(contact.bj===chest.body&&support.forearms.has(contact.bi)))sleeveLoad=Math.max(sleeveLoad,contact.multiplier);
+    if((contact.bi===chest.body&&support.forearms.has(contact.bj))||(contact.bj===chest.body&&support.forearms.has(contact.bi)))sleeveChestLoad=Math.max(sleeveChestLoad,contact.multiplier);
+    if((contact.bi===hip.body&&support.forearms.has(contact.bj))||(contact.bj===hip.body&&support.forearms.has(contact.bi)))sleevePelvisLoad=Math.max(sleevePelvisLoad,contact.multiplier);
   }
+  const sleeveLoad=Math.max(sleeveChestLoad,sleevePelvisLoad);
   const elevated=ratio>.6&&armLoad;
   if(advance&&!support.released){
     const quiet=hip.body.velocity.length()<.6&&chest.body.velocity.length()<.6&&hip.body.angularVelocity.length()<1.5&&chest.body.angularVelocity.length()<1.5;
@@ -384,7 +532,7 @@ function allowSupportedClothSlide(state,advance=true){
       // Keep only scalar evidence from the preceding real physics contacts.
       // No Body, equation or contact reference survives the whole-world freeze.
       support.proof={age:state.world.time,sustainedSeconds:support.hold,torsoRatio:ratio,tiltRate:support.tiltRate,
-        armGroundLoad:armLoad,sleeveChestLoad:sleeveLoad,hipSpeed:hip.body.velocity.length(),chestSpeed:chest.body.velocity.length(),
+        armGroundLoad:armLoad,sleeveChestLoad,sleevePelvisLoad,sleeveTrunkLoad:sleeveLoad,hipSpeed:hip.body.velocity.length(),chestSpeed:chest.body.velocity.length(),
         hipAngularSpeed:hip.body.angularVelocity.length(),chestAngularSpeed:chest.body.angularVelocity.length(),
         waistSwingDegrees:60,gloveDeckFriction:0,selfFriction:0};
       support.released=true;support.releaseAge=state.world.time;
